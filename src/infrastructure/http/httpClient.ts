@@ -1,13 +1,5 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import config from '../../config';
-
-const whatsappApi: AxiosInstance = axios.create({
-  baseURL: config.whatsapp.apiBaseUrl,
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${config.whatsapp.apiToken}`,
-  },
-});
+import { AxiosResponse } from 'axios';
+import { whatsappApi } from './axios.client'; // <-- Importa la instancia
 
 export const httpClient = {
   post: <T>(url: string, data: any): Promise<AxiosResponse<T>> => {

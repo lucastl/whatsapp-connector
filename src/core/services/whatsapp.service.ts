@@ -4,8 +4,13 @@ import logger from '../../infrastructure/logging/logger';
 import { sendEnrichedEmail } from './email.service';
 import { ApiError } from '../errors/ApiError';
 import { httpClient } from '../../infrastructure/http/httpClient';
-import { FLOW_NAMES, WHATSAPP_INTERACTIVE_TYPES, WHATSAPP_MESSAGE_TYPES } from '../../config/constants';
+import {
+  FLOW_NAMES,
+  WHATSAPP_INTERACTIVE_TYPES,
+  WHATSAPP_MESSAGE_TYPES,
+} from '../../config/constants';
 import { WhatsappWebhookPayload } from '../types/whatsapp.types';
+import { whatsappFlowResponseSchema } from '../../api/validators/webhook.validator';
 
 const MESSAGES_ENDPOINT = `/${config.whatsapp.phoneNumberId}/messages`;
 
@@ -43,18 +48,20 @@ export const triggerWhatsappFlow = async (customerPhone: string): Promise<void> 
 };
 
 export const handleIncomingWhatsappMessage = (payload: WhatsappWebhookPayload): void => {
-  const message = payload.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+  const validationResult = whatsappFlowResponseSchema.safeParse(payload);
 
-  if (message && message.type === WHATSAPP_MESSAGE_TYPES.INTERACTIVE && message.interactive?.type === WHATSAPP_INTERACTIVE_TYPES.NFM_REPLY) {
-    const customerPhone = message.from;
-    const flowResponse = JSON.parse(message.interactive.nfm_reply.response_json);
-
-    logger.info({ customerPhone, flowResponse }, 'Flow response received');
-
-    sendEnrichedEmail(customerPhone, flowResponse).catch((error) =>
-      logger.error(error, 'Failed to send enriched email from webhook handler'),
+  if (!validationResult.success) {
+    logger.warn(
+      { errors: validationResult.error.format() },
+      'Invalid WhatsApp webhook payload received',
     );
-  } else {
-    logger.info('Received a standard message, not a Flow response. Ignoring.');
+    return;
   }
+
+  const message = validationResult.data.entry[0].changes[0].value.messages[0];
+  const customerPhone = message.from;
+  const flowResponse = JSON.parse(message.interactive.nfm_reply.response_json);
+  
+  logger.info({ customerPhone, flowResponse }, 'Flow response received and validated');
+  sendEnrichedEmail(customerPhone, flowResponse);
 };
