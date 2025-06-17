@@ -13,6 +13,7 @@ export const globalErrorHandler = (
     res.status(err.statusCode).json({
       status: 'error',
       message: err.message,
+      ...(err.details && { details: err.details }), // Añade 'details' solo si existe
     });
   } else {
     res.status(500).json({

@@ -21,17 +21,20 @@ export const handleAsterVoipTrigger = async (
 
     const validationResult = asterVoipTriggerSchema.safeParse(req.body);
     if (!validationResult.success) {
-      throw new AppError('Cuerpo de la petición inválido.', 400);
+      throw new AppError(
+        'El cuerpo de la petición contiene datos inválidos.',
+        400,
+        validationResult.error.format(),
+      );
     }
 
     const { customerPhone } = validationResult.data;
-
     await triggerWhatsappFlow(customerPhone);
+
     req.log.info(`WhatsApp Flow trigger initiated for customer: ${customerPhone}`);
 
     return res.status(202).json({ message: 'Accepted: WhatsApp Flow trigger initiated.' });
   } catch (error) {
-    // Si algo falla, simplemente lo pasamos al siguiente middleware (el manejador de errores).
     next(error);
   }
 };
