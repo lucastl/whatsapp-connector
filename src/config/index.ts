@@ -1,9 +1,11 @@
 import dotenv from 'dotenv';
 
-dotenv.config();
+if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === undefined) {
+  dotenv.config();
+}
 
 const config = {
-  port: process.env.PORT || 3000,
+  port: parseInt(process.env.PORT || '3000', 10),
   astervoipAuthToken: process.env.ASTERVOIP_AUTH_TOKEN,
   whatsapp: {
     apiToken: process.env.WHATSAPP_API_TOKEN,
