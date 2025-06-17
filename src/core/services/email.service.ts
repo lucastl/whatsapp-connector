@@ -4,8 +4,7 @@ import logger from '../../infrastructure/logging/logger';
 import { ApiError } from '../errors/ApiError';
 import { EMAIL_CONFIG } from '../../config/constants';
 import { FlowResponse } from '../types/whatsapp.types';
-
-const resend = new Resend(config.resend.apiKey);
+import { resendClient } from '../../infrastructure/email/resend.client';
 
 export const sendEnrichedEmail = async (
   customerPhone: string,
@@ -28,7 +27,7 @@ export const sendEnrichedEmail = async (
   emailHtmlBody += `</ul><p><em>Este es un mensaje automático. Por favor, contactar al cliente a la brevedad.</em></p>`;
 
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await resendClient.emails.send({
       from: EMAIL_CONFIG.FROM_ADDRESS,
       to: EMAIL_CONFIG.SALES_TEAM_LIST,
       subject: emailSubject,
