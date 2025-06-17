@@ -1,34 +1,44 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import config from '../../config';
-import { handleIncomingWhatsappMessage, triggerWhatsappFlow } from '../../core/services/whatsapp.service';
+import {
+  handleIncomingWhatsappMessage,
+  triggerWhatsappFlow,
+} from '../../core/services/whatsapp.service';
 import { asterVoipTriggerSchema } from '../validators/webhook.validator';
+import { AppError } from '../../core/errors/AppError';
 
-export const handleAsterVoipTrigger = async (req: Request, res: Response): Promise<void> => {
-  req.log.info('AsterVOIP trigger received');
-
-  const validationResult = asterVoipTriggerSchema.safeParse(req.body);
-
-  if (!validationResult.success) {
-    req.log.warn({ errors: validationResult.error.issues }, 'Invalid request body from AsterVOIP');
-    res.status(400).json({ error: 'Invalid request body', details: validationResult.error.issues });
-    return;
-  }
-
-  const { customerPhone } = validationResult.data;
-
+/**
+ * Maneja el trigger de AsterVOIP.
+ * Nota: Añadimos 'next' para pasar los errores al middleware global.
+ */
+export const handleAsterVoipTrigger = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<Response | void> => {
   try {
+    req.log.info('AsterVOIP trigger received');
+
+    const validationResult = asterVoipTriggerSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      throw new AppError('Cuerpo de la petición inválido.', 400);
+    }
+
+    const { customerPhone } = validationResult.data;
+
     await triggerWhatsappFlow(customerPhone);
     req.log.info(`WhatsApp Flow trigger initiated for customer: ${customerPhone}`);
-    res.status(202).json({ message: 'Accepted: WhatsApp Flow trigger initiated.' });
+
+    return res.status(202).json({ message: 'Accepted: WhatsApp Flow trigger initiated.' });
   } catch (error) {
-    req.log.error(error, 'Failed to trigger WhatsApp Flow');
-    res.status(500).json({ error: 'Internal Server Error' });
+    // Si algo falla, simplemente lo pasamos al siguiente middleware (el manejador de errores).
+    next(error);
   }
 };
 
 export const handleWhatsappWebhook = (req: Request, res: Response): void => {
   req.log.info('WhatsApp webhook event received');
-  
+
   handleIncomingWhatsappMessage(req.body);
 
   res.sendStatus(200);

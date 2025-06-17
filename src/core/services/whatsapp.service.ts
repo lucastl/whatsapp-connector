@@ -3,6 +3,7 @@ import axios from 'axios';
 import config from '../../config';
 import logger from '../../infrastructure/logging/logger';
 import { sendEnrichedEmail } from './email.service';
+import { ApiError } from '../errors/ApiError';
 
 const WHATSAPP_API_URL = `https://graph.facebook.com/v19.0/${config.whatsapp.phoneNumberId}/messages`;
 
@@ -53,7 +54,7 @@ export const triggerWhatsappFlow = async (customerPhone: string): Promise<void> 
         error: error.response?.data || error.message 
     }, 'Error details');
 
-    throw new Error('Could not send WhatsApp Flow');
+    throw new ApiError('WhatsApp', error);
   }
 };
 
