@@ -1,4 +1,3 @@
-// (CORREGIDO) Ajusta la estructura del payload para la acción del Flow.
 import axios from 'axios';
 import config from '../../config';
 import logger from '../../infrastructure/logging/logger';
@@ -20,9 +19,9 @@ export const triggerWhatsappFlow = async (customerPhone: string): Promise<void> 
   const payload = {
     messaging_product: 'whatsapp',
     to: customerPhone,
-    type: 'interactive',
+    type: WHATSAPP_MESSAGE_TYPES.INTERACTIVE,
     interactive: {
-      type: 'flow',
+      type: WHATSAPP_INTERACTIVE_TYPES.FLOW,
       header: { type: 'text', text: 'Encuesta Rápida de Interés' },
       body: { text: 'Por favor, tómate un minuto para completar nuestra encuesta.' },
       footer: { text: 'Haz clic en el botón para comenzar 👇' },

@@ -11,7 +11,7 @@ export const verifyAsterVoipToken = (
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    logger.warn('Intento de acceso sin token o token malformado a webhook AsterVOIP');
+    logger.warn('Access attempt to AsterVOIP webhook without token or with malformed token');
     res.status(401).json({ message: 'Unauthorized: Missing or malformed token' });
     return;
   }
@@ -19,7 +19,7 @@ export const verifyAsterVoipToken = (
   const token = authHeader.split(' ')[1];
 
   if (token !== config.astervoipAuthToken) {
-    logger.warn('Intento de acceso con token inválido a webhook AsterVOIP');
+    logger.warn('Access attempt to AsterVOIP webhook with invalid token');
     res.status(403).json({ message: 'Forbidden: Invalid token' });
     return;
   }

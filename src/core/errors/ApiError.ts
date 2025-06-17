@@ -5,7 +5,7 @@ export class ApiError extends AppError {
 
   constructor(apiName: string, originalError: any) {
     const statusCode = originalError.response?.status || 500;
-    const message = `Error al comunicarse con la API de ${apiName}.`;
+    const message = `Error communicating with the ${apiName} API.`;
     
     super(message, statusCode, originalError.response?.data);
     this.stack = originalError.stack;

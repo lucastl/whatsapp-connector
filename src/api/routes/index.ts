@@ -1,4 +1,3 @@
-// Router principal que agrupará todas las demás rutas.
 import { Router } from 'express';
 import webhookRouter from './webhook.routes';
 

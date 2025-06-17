@@ -18,7 +18,7 @@ export const globalErrorHandler = (
   } else {
     res.status(500).json({
       status: 'error',
-      message: 'Ocurrió un error interno inesperado en el servidor.',
+      message: 'An unexpected internal server error occurred.',
     });
   }
 };
