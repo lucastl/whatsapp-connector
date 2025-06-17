@@ -1,26 +1,30 @@
 import { Request, Response } from 'express';
-import { handleIncomingWhatsappMessage, triggerWhatsappFlow } from '../../core/services/whatsapp.service';
-import { asterVoipTriggerSchema } from '../validators/webhook.validator';
-import config from '../../config';
-import { AppError } from '../../core/errors/AppError';
-import { asyncHandler } from '../utils/asyncHandler';
 
-export const handleAsterVoipTrigger = asyncHandler(async (req, res, next) => {
+import { asyncHandler } from '@/api/utils/asyncHandler';
+import { asterVoipTriggerSchema } from '@/api/validators/webhook.validator';
+import config from '@/config';
+import { AppError } from '@/core/errors/AppError';
+import {
+  handleIncomingWhatsappMessage,
+  triggerWhatsappFlow,
+} from '@/core/services/whatsapp.service';
+
+export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   req.log.info('AsterVOIP trigger received');
 
   const validationResult = asterVoipTriggerSchema.safeParse(req.body);
   if (!validationResult.success) {
     throw new AppError(
-      'The request body contains invalid data.', 
-      400, 
-      validationResult.error.format()
+      'The request body contains invalid data.',
+      400,
+      validationResult.error.format(),
     );
   }
-  
+
   const { customerPhone } = validationResult.data;
   await triggerWhatsappFlow(customerPhone);
   req.log.info(`WhatsApp Flow trigger initiated for customer: ${customerPhone}`);
-  
+
   res.status(202).json({ message: 'Accepted: WhatsApp Flow trigger initiated.' });
 });
 

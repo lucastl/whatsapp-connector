@@ -1,13 +1,9 @@
-// src/api/middlewares/auth.middleware.ts
-import { Request, Response, NextFunction } from 'express';
-import config from '../../config';
-import logger from '../../infrastructure/logging/logger';
+import { NextFunction, Request, Response } from 'express';
 
-export const verifyAsterVoipToken = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
+import config from '@/config';
+import logger from '@/infrastructure/logging/logger';
+
+export const verifyAsterVoipToken = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

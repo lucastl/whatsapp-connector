@@ -1,21 +1,18 @@
-import axios from 'axios';
-import config from '../../config';
-import logger from '../../infrastructure/logging/logger';
+import { whatsappFlowResponseSchema } from '@/api/validators/webhook.validator';
+import config from '@/config';
+import { FLOW_NAMES, WHATSAPP_INTERACTIVE_TYPES, WHATSAPP_MESSAGE_TYPES } from '@/config/constants';
+import { ApiError } from '@/core/errors/ApiError';
+import { WhatsappWebhookPayload } from '@/core/types/whatsapp.types';
+import { httpClient } from '@/infrastructure/http/httpClient';
+import logger from '@/infrastructure/logging/logger';
+
 import { sendEnrichedEmail } from './email.service';
-import { ApiError } from '../errors/ApiError';
-import { httpClient } from '../../infrastructure/http/httpClient';
-import {
-  FLOW_NAMES,
-  WHATSAPP_INTERACTIVE_TYPES,
-  WHATSAPP_MESSAGE_TYPES,
-} from '../../config/constants';
-import { WhatsappWebhookPayload } from '../types/whatsapp.types';
-import { whatsappFlowResponseSchema } from '../../api/validators/webhook.validator';
 
 const MESSAGES_ENDPOINT = `/${config.whatsapp.phoneNumberId}/messages`;
 
 export const triggerWhatsappFlow = async (customerPhone: string): Promise<void> => {
   // TODO: We need to design the Flow JSON and replace this placeholder.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const flowData = {
     // TODO: Define parameters to pass to the Flow here, if necessary.
     // Example: { "customer_name": "Lucas", "product_offer": "Fiber 1000" }
@@ -42,7 +39,7 @@ export const triggerWhatsappFlow = async (customerPhone: string): Promise<void> 
   try {
     await httpClient.post(MESSAGES_ENDPOINT, payload);
     logger.info(`Flow sent successfully to ${customerPhone}`);
-  } catch (error: any) {
+  } catch (error) {
     throw new ApiError('WhatsApp', error);
   }
 };
@@ -61,7 +58,7 @@ export const handleIncomingWhatsappMessage = (payload: WhatsappWebhookPayload): 
   const message = validationResult.data.entry[0].changes[0].value.messages[0];
   const customerPhone = message.from;
   const flowResponse = JSON.parse(message.interactive.nfm_reply.response_json);
-  
+
   logger.info({ customerPhone, flowResponse }, 'Flow response received and validated');
   sendEnrichedEmail(customerPhone, flowResponse);
 };

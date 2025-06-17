@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+
 import { WHATSAPP_API_BASE_URL } from './constants';
 
 if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === undefined) {

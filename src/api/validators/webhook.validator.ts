@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import { WHATSAPP_INTERACTIVE_TYPES, WHATSAPP_MESSAGE_TYPES } from '../../config/constants';
+
+import { WHATSAPP_INTERACTIVE_TYPES, WHATSAPP_MESSAGE_TYPES } from '@/config/constants';
 
 export const asterVoipTriggerSchema = z.object({
-  customerPhone: z.string().min(10, { message: "Phone number must be at least 10 digits" }),
+  customerPhone: z.string().min(10, { message: 'Phone number must be at least 10 digits' }),
 });
 
 export const whatsappFlowResponseSchema = z.object({
@@ -23,11 +24,11 @@ export const whatsappFlowResponseSchema = z.object({
                     response_json: z.string(),
                   }),
                 }),
-              })
+              }),
             ),
           }),
-        })
+        }),
       ),
-    })
+    }),
   ),
 });

@@ -1,10 +1,8 @@
-import { Resend } from 'resend';
-import config from '../../config';
-import logger from '../../infrastructure/logging/logger';
-import { ApiError } from '../errors/ApiError';
-import { EMAIL_CONFIG } from '../../config/constants';
-import { FlowResponse } from '../types/whatsapp.types';
-import { resendClient } from '../../infrastructure/email/resend.client';
+import { EMAIL_CONFIG } from '@/config/constants';
+import { ApiError } from '@/core/errors/ApiError';
+import { FlowResponse } from '@/core/types/whatsapp.types';
+import { resendClient } from '@/infrastructure/email/resend.client';
+import logger from '@/infrastructure/logging/logger';
 
 export const sendEnrichedEmail = async (
   customerPhone: string,

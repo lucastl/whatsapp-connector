@@ -1,10 +1,11 @@
 import { Router } from 'express';
+
 import {
   handleAsterVoipTrigger,
   handleWhatsappWebhook,
   verifyWhatsappWebhook,
-} from '../controllers/webhook.controller';
-import { verifyAsterVoipToken } from '../middlewares/auth.middleware';
+} from '@/api/controllers/webhook.controller';
+import { verifyAsterVoipToken } from '@/api/middlewares/auth.middleware';
 
 const webhookRouter = Router();
 
@@ -13,11 +14,7 @@ const webhookRouter = Router();
  * @desc    Endpoint that receives the trigger from AsterVOIP
  * @access  Private (requires authentication token)
  */
-webhookRouter.post(
-  '/astervoip-trigger',
-  verifyAsterVoipToken,
-  handleAsterVoipTrigger,
-);
+webhookRouter.post('/astervoip-trigger', verifyAsterVoipToken, handleAsterVoipTrigger);
 
 /**
  * @route   POST /api/v1/webhooks/whatsapp

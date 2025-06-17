@@ -1,11 +1,11 @@
 import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
-import config from './config';
-import logger from './infrastructure/logging/logger';
-import mainRouter from './api/routes';
-import { globalErrorHandler } from './api/middlewares/error.middleware';
 
+import { globalErrorHandler } from '@/api/middlewares/error.middleware';
+import mainRouter from '@/api/routes';
+import config from '@/config';
+import logger from '@/infrastructure/logging/logger';
 
 const app = express();
 

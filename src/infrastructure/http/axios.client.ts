@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
-import config from '../../config';
+
+import config from '@/config';
 
 export const whatsappApi: AxiosInstance = axios.create({
   baseURL: config.whatsapp.apiBaseUrl,
