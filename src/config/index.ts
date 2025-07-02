@@ -1,10 +1,4 @@
-import dotenv from 'dotenv';
-
 import { WHATSAPP_API_BASE_URL } from './constants';
-
-if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === undefined) {
-  dotenv.config();
-}
 
 const config = {
   port: parseInt(process.env.PORT || '3000', 10),
