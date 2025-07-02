@@ -10,15 +10,14 @@ import {
 } from '@/core/services/whatsapp.service';
 
 export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
-  req.log.info('AsterVOIP trigger received');
+  req.log.info(`AsterVOIP trigger received from: ${req.ip}`);
 
   const validationResult = asterVoipTriggerSchema.safeParse(req.body);
   if (!validationResult.success) {
-    throw new AppError(
-      'The request body contains invalid data.',
-      400,
-      validationResult.error.format(),
-    );
+    throw new AppError('The request body contains invalid data.', 400, {
+      error: validationResult.error.format(),
+      body: req.body,
+    });
   }
 
   const { customerPhone } = validationResult.data;
