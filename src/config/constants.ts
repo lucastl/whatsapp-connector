@@ -6,8 +6,8 @@ export const FLOW_NAMES = {
 };
 
 export const EMAIL_CONFIG = {
-  FROM_ADDRESS: 'Sistema de Alertas <onboarding@resend.dev>',
-  SALES_TEAM_LIST: ['lucastosellolatini@gmail.com'],
+  FROM_ADDRESS: 'Sistema de Alertas <ventas@fycmktinteractivo.com>',
+  SALES_TEAM_LIST: ['ventas@fycmktinteractivo.com'],
 };
 
 export const WHATSAPP_INTERACTIVE_TYPES = {
