@@ -1,14 +1,18 @@
-import pino from 'pino';
+import pino, { LoggerOptions } from 'pino';
 
-const logger = pino({
-  transport: {
+const pinoOptions: LoggerOptions = {
+  level: process.env.LOG_LEVEL || 'info',
+};
+
+if (process.env.NODE_ENV !== 'production') {
+  pinoOptions.transport = {
     target: 'pino-pretty',
     options: {
       colorize: true,
-      translateTime: 'SYS:dd-mm-yyyy HH:MM:ss',
-      ignore: 'pid,hostname',
     },
-  },
-});
+  };
+}
+
+const logger = pino(pinoOptions);
 
 export default logger;
