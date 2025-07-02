@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
@@ -8,6 +10,8 @@ import config from '@/config';
 import logger from '@/infrastructure/logging/logger';
 
 const app = express();
+
+app.set('trust proxy', 1);
 
 app.use(express.json());
 app.use(helmet());
