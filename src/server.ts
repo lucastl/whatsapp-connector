@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 
 import { globalErrorHandler } from '@/api/middlewares/error.middleware';
+import { ipWhitelistMiddleware } from '@/api/middlewares/ipWhitelist.middleware';
 import mainRouter from '@/api/routes';
 import config from '@/config';
 import logger from '@/infrastructure/logging/logger';
@@ -16,6 +17,8 @@ app.set('trust proxy', 1);
 app.use(express.json());
 app.use(helmet());
 app.use(pinoHttp({ logger }));
+
+app.use(ipWhitelistMiddleware);
 
 app.use('/api/v1', mainRouter);
 

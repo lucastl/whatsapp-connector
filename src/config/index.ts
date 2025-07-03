@@ -12,6 +12,9 @@ const config = {
   resend: {
     apiKey: process.env.RESEND_API_KEY,
   },
+  security: {
+    allowedIps: process.env.ALLOWED_IPS,
+  },
 };
 
 export default config;
