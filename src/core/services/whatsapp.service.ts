@@ -5,20 +5,19 @@ import { ApiError } from '@/core/errors/ApiError';
 import { WhatsappWebhookPayload } from '@/core/types/whatsapp.types';
 import { httpClient } from '@/infrastructure/http/httpClient';
 import logger from '@/infrastructure/logging/logger';
+import {
+  apiErrorsTotal,
+  whatsappFlowsCompleted,
+  whatsappFlowsInitiated,
+  whatsappFlowsProcessingErrors,
+} from '@/infrastructure/monitoring/metrics';
 
 import { sendEnrichedEmail } from './email.service';
 
 const MESSAGES_ENDPOINT = `/${config.whatsapp.phoneNumberId}/messages`;
 
-export const triggerWhatsappFlow = async (customerPhone: string): Promise<void> => {
-  // TODO: We need to design the Flow JSON and replace this placeholder.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const flowData = {
-    // TODO: Define parameters to pass to the Flow here, if necessary.
-    // Example: { "customer_name": "Lucas", "product_offer": "Fiber 1000" }
-  };
-
-  const payload = {
+const _buildFlowPayload = (customerPhone: string) => {
+  return {
     messaging_product: 'whatsapp',
     to: customerPhone,
     type: WHATSAPP_MESSAGE_TYPES.INTERACTIVE,
@@ -28,37 +27,49 @@ export const triggerWhatsappFlow = async (customerPhone: string): Promise<void> 
       body: { text: 'Por favor, tómate un minuto para completar nuestra encuesta.' },
       footer: { text: 'Haz clic en el botón para comenzar 👇' },
       action: {
-        name: FLOW_NAMES.SURVEY, // <-- Usamos la constante
-        parameters: {},
+        name: FLOW_NAMES.SURVEY,
+        parameters: {}, // Aquí se podrían pasar parámetros al Flow si fuera necesario
       },
     },
   };
+};
 
+export const triggerWhatsappFlow = async (customerPhone: string): Promise<void> => {
   logger.info(`Sending WhatsApp Flow to ${customerPhone}`);
+
+  const payload = _buildFlowPayload(customerPhone);
 
   try {
     await httpClient.post(MESSAGES_ENDPOINT, payload);
+    whatsappFlowsInitiated.inc();
     logger.info(`Flow sent successfully to ${customerPhone}`);
   } catch (error) {
+    apiErrorsTotal.inc({ service: 'whatsapp' });
     throw new ApiError('WhatsApp', error);
   }
 };
 
 export const handleIncomingWhatsappMessage = (payload: WhatsappWebhookPayload): void => {
-  const validationResult = whatsappFlowResponseSchema.safeParse(payload);
+  try {
+    const validationResult = whatsappFlowResponseSchema.safeParse(payload);
 
-  if (!validationResult.success) {
-    logger.warn(
-      { errors: validationResult.error.format() },
-      'Invalid WhatsApp webhook payload received',
-    );
-    return;
+    if (!validationResult.success) {
+      logger.warn(
+        { errors: validationResult.error.format() },
+        'Invalid WhatsApp webhook payload received',
+      );
+      return;
+    }
+
+    const message = validationResult.data.entry[0].changes[0].value.messages[0];
+    const customerPhone = message.from;
+    const flowResponse = JSON.parse(message.interactive.nfm_reply.response_json);
+
+    logger.info({ customerPhone, flowResponse }, 'Flow response received and validated');
+    whatsappFlowsCompleted.inc();
+    sendEnrichedEmail(customerPhone, flowResponse);
+  } catch (error) {
+    whatsappFlowsProcessingErrors.inc();
+    logger.error(error, 'Error processing incoming WhatsApp message. Payload will be ignored.');
   }
-
-  const message = validationResult.data.entry[0].changes[0].value.messages[0];
-  const customerPhone = message.from;
-  const flowResponse = JSON.parse(message.interactive.nfm_reply.response_json);
-
-  logger.info({ customerPhone, flowResponse }, 'Flow response received and validated');
-  sendEnrichedEmail(customerPhone, flowResponse);
 };

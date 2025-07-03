@@ -8,20 +8,25 @@ import {
   handleIncomingWhatsappMessage,
   triggerWhatsappFlow,
 } from '@/core/services/whatsapp.service';
+import { astervoipTriggersTotal } from '@/infrastructure/monitoring/metrics';
 
 export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   req.log.info(`AsterVOIP trigger received from: ${req.ip}`);
 
   const validationResult = asterVoipTriggerSchema.safeParse(req.body);
   if (!validationResult.success) {
+    astervoipTriggersTotal.inc({ status: 'validation_error' });
     throw new AppError('The request body contains invalid data.', 400, {
       error: validationResult.error.format(),
       body: req.body,
     });
   }
 
+  astervoipTriggersTotal.inc({ status: 'success' });
+
   const { customerPhone } = validationResult.data;
   await triggerWhatsappFlow(customerPhone);
+
   req.log.info(`WhatsApp Flow trigger initiated for customer: ${customerPhone}`);
 
   res.status(202).json({ message: 'Accepted: WhatsApp Flow trigger initiated.' });
