@@ -2,8 +2,7 @@ version: '3.8'
 
 services:
   app:
-    # ¡CAMBIO CLAVE! Ya no construimos, usamos la imagen de Docker Hub.
-    image: tunombredeusuario/whatsapp-connector:latest # <-- Reemplazá con tu usuario de Docker Hub
+    image: lucastosellolatini/whatsapp-connector:latest
     container_name: whatsapp_connector_app
     restart: unless-stopped
     env_file:
