@@ -1,7 +1,7 @@
 {
   "name": "whatsapp-connector",
   "description": "Backend connector for AsterVOIP and WhatsApp Flows",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "dist/server.js",
   "author": "Lucas Tosello Latini",
   "license": "ISC",
