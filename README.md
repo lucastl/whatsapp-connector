@@ -108,4 +108,5 @@ curl -X POST http://localhost:3000/api/v1/webhooks/whatsapp \
   "object": "whatsapp_business_account",
   "entry": [ { "changes": [ { "field": "messages", "value": { "messages": [ { "from": "549...", "type": "interactive", "interactive": { "type": "nfm_reply", "nfm_reply": { "response_json": "{\"product_interest\":\"fibra_1000\",\"best_time_to_call\":\"tarde\"}" } } } ] } } ] } ]
 }'
+
 ```
