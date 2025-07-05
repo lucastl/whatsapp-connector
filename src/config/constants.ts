@@ -1,8 +1,8 @@
-export const WHATSAPP_API_VERSION = 'v19.0';
+export const WHATSAPP_API_VERSION = 'v22.0';
 export const WHATSAPP_API_BASE_URL = `https://graph.facebook.com/${WHATSAPP_API_VERSION}`;
 
 export const FLOW_NAMES = {
-  SURVEY: 'survey',
+  SURVEY: '4054751074844285',
 };
 
 export const EMAIL_CONFIG = {
