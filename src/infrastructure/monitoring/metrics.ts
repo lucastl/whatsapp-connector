@@ -52,4 +52,9 @@ export const invalidAuthTokensTotal = new Counter({
   labelNames: ['reason'],
 });
 
+export const whatsappInvalidPayloadsTotal = new Counter({
+  name: 'whatsapp_invalid_payloads_total',
+  help: 'Total de webhooks de WhatsApp recibidos con un payload inesperado o no manejado',
+});
+
 export { register };

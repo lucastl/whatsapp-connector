@@ -10,6 +10,7 @@ import {
   whatsappFlowsCompleted,
   whatsappFlowsInitiated,
   whatsappFlowsProcessingErrors,
+  whatsappInvalidPayloadsTotal,
 } from '@/infrastructure/monitoring/metrics';
 
 import { sendEnrichedEmail } from './email.service';
@@ -58,6 +59,8 @@ export const handleIncomingWhatsappMessage = (payload: WhatsappWebhookPayload): 
         { errors: validationResult.error.format() },
         'Invalid WhatsApp webhook payload received',
       );
+
+      whatsappInvalidPayloadsTotal.inc();
       return;
     }
 
