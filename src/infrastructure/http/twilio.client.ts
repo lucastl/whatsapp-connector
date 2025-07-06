@@ -4,14 +4,8 @@ import config from '@/config';
 
 const { accountSid, authToken, phoneNumber } = config.twilio;
 
-if (!accountSid) {
-    throw new Error('Twilio accountSid is not set in environment variables.');
-}
-if (!authToken) {
-    throw new Error('Twilio authToken is not set in environment variables.');
-}
-if (!phoneNumber) {
-    throw new Error('Twilio phoneNumber is not set in environment variables.');
+if (!accountSid || !authToken || !phoneNumber) {
+    throw new Error('Missing required Twilio configuration. Ensure TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER are set in environment variables.');
 }
 
 export const twilioClient = twilio(accountSid, authToken);

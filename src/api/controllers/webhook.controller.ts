@@ -60,6 +60,7 @@ export const handleTwilioWebhook = [
   // Twilio signature validation middleware
   (req: Request, res: Response, next: Function) => {
     const signature = req.headers['x-twilio-signature'] as string;
+    // Ensure Express is configured with app.set('trust proxy', 1) in your main app file
     const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
     const isValid = twilio.validateRequest(
       twilioAuthToken,
