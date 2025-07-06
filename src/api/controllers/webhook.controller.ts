@@ -61,6 +61,13 @@ export const handleTwilioWebhook = [
   (req: Request, res: Response, next: Function) => {
     const signature = req.headers['x-twilio-signature'] as string;
     // Ensure Express is configured with app.set('trust proxy', 1) in your main app file
+    // This ensures req.protocol reflects the original protocol (e.g., 'https') behind a proxy.
+    // In your main Express app (e.g., app.ts or server.ts), add:
+    //    app.set('trust proxy', 1);
+    // Example:
+    //    import express from 'express';
+    //    const app = express();
+    //    app.set('trust proxy', 1);
     const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
     const isValid = twilio.validateRequest(
       twilioAuthToken,
