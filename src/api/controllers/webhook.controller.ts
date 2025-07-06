@@ -4,6 +4,7 @@ import { asyncHandler } from '@/api/utils/asyncHandler';
 import { asterVoipTriggerSchema } from '@/api/validators/webhook.validator';
 import config from '@/config';
 import { AppError } from '@/core/errors/AppError';
+import { handleTwilioWebhook as handleTwilioWebhookService } from '@/core/services/twilio.service';
 import {
   handleIncomingWhatsappMessage,
   triggerSurveyTemplate,
@@ -50,4 +51,9 @@ export const verifyWhatsappWebhook = (req: Request, res: Response): void => {
     req.log.error('Failed to verify WhatsApp webhook.');
     res.sendStatus(403);
   }
+};
+
+export const handleTwilioWebhook = (req: Request, res: Response): void => {
+  handleTwilioWebhookService(req.body);
+  res.sendStatus(200);
 };

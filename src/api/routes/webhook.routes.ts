@@ -6,6 +6,7 @@ import {
   verifyWhatsappWebhook,
 } from '@/api/controllers/webhook.controller';
 import { verifyAsterVoipToken } from '@/api/middlewares/auth.middleware';
+import { handleTwilioWebhook } from '@/core/services/twilio.service';
 
 const webhookRouter = Router();
 
@@ -29,5 +30,12 @@ webhookRouter.post('/whatsapp', handleWhatsappWebhook);
  * @access  Public
  */
 webhookRouter.get('/whatsapp', verifyWhatsappWebhook);
+
+/**
+ * @route   POST /api/v1/webhooks/twilio
+ * @desc    Endpoint that receives events from the Twilio API
+ * @access  Public
+ */
+webhookRouter.post('/twilio', handleTwilioWebhook);
 
 export default webhookRouter;
