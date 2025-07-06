@@ -5,6 +5,10 @@ export const FLOW_NAMES = {
   SURVEY: '4054751074844285',
 };
 
+export const TEMPLATE_NAMES = {
+  SURVEY_INVITE: 'initial_conversation',
+};
+
 export const EMAIL_CONFIG = {
   FROM_ADDRESS: 'Sistema de Alertas <ventas@fycmktinteractivo.com>',
   SALES_TEAM_LIST: ['ventas@fycmktinteractivo.com'],
@@ -17,4 +21,5 @@ export const WHATSAPP_INTERACTIVE_TYPES = {
 
 export const WHATSAPP_MESSAGE_TYPES = {
   INTERACTIVE: 'interactive',
+  TEMPLATE: 'template',
 };

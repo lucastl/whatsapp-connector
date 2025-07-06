@@ -20,6 +20,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/construccion:/var/www/construccion:ro
     networks:
       - app-network
     depends_on:

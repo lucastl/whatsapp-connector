@@ -6,7 +6,7 @@ import config from '@/config';
 import { AppError } from '@/core/errors/AppError';
 import {
   handleIncomingWhatsappMessage,
-  triggerWhatsappFlow,
+  triggerSurveyTemplate,
 } from '@/core/services/whatsapp.service';
 import { astervoipTriggersTotal } from '@/infrastructure/monitoring/metrics';
 
@@ -25,11 +25,11 @@ export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   astervoipTriggersTotal.inc({ status: 'success' });
 
   const { customerPhone } = validationResult.data;
-  await triggerWhatsappFlow(customerPhone);
+  await triggerSurveyTemplate(customerPhone);
 
-  req.log.info(`WhatsApp Flow trigger initiated for customer: ${customerPhone}`);
+  req.log.info(`WhatsApp Template trigger initiated for customer: ${customerPhone}`);
 
-  res.status(202).json({ message: 'Accepted: WhatsApp Flow trigger initiated.' });
+  res.status(202).json({ message: 'Accepted: WhatsApp Template trigger initiated.' });
 });
 
 export const handleWhatsappWebhook = (req: Request, res: Response): void => {

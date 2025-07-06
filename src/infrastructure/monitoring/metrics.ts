@@ -13,9 +13,9 @@ export const astervoipTriggersTotal = new Counter({
   labelNames: ['status'],
 });
 
-export const whatsappFlowsInitiated = new Counter({
-  name: 'whatsapp_flows_initiated_total',
-  help: 'Total de WhatsApp Flows que se intentaron iniciar',
+export const whatsappTemplateSended = new Counter({
+  name: 'whatsapp_template_sended_total',
+  help: 'Total de WhatsApp Templates que se intentaron enviar',
 });
 
 export const whatsappFlowsCompleted = new Counter({
