@@ -20,6 +20,6 @@ export const sendTwilioMessage = async (to: string, body: string): Promise<void>
 
 export const handleTwilioWebhook = (payload: unknown): void => {
   logger.info('Twilio webhook event received');
-  // Aquí puedes procesar el payload del webhook de Twilio
-  // y, por ejemplo, enviar un email con la información recibida.
+  // TODO: Process the Twilio webhook payload.
+  // For example, parse the payload and trigger business logic based on its content.
 };

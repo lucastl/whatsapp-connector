@@ -4,9 +4,9 @@ import {
   handleAsterVoipTrigger,
   handleWhatsappWebhook,
   verifyWhatsappWebhook,
+  handleTwilioWebhook,
 } from '@/api/controllers/webhook.controller';
 import { verifyAsterVoipToken } from '@/api/middlewares/auth.middleware';
-import { handleTwilioWebhook } from '@/core/services/twilio.service';
 
 const webhookRouter = Router();
 

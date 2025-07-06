@@ -10,6 +10,7 @@ import {
   triggerSurveyTemplate,
 } from '@/core/services/whatsapp.service';
 import { astervoipTriggersTotal } from '@/infrastructure/monitoring/metrics';
+import twilio from 'twilio';
 
 export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   req.log.info(`AsterVOIP trigger received from: ${req.ip}`);
@@ -53,7 +54,29 @@ export const verifyWhatsappWebhook = (req: Request, res: Response): void => {
   }
 };
 
-export const handleTwilioWebhook = (req: Request, res: Response): void => {
-  handleTwilioWebhookService(req.body);
-  res.sendStatus(200);
-};
+const twilioAuthToken = config.twilio.authToken; // Make sure this is set in your config
+
+export const handleTwilioWebhook = [
+  // Twilio signature validation middleware
+  (req: Request, res: Response, next: Function) => {
+    const signature = req.headers['x-twilio-signature'] as string;
+    const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+    const isValid = twilio.validateRequest(
+      twilioAuthToken,
+      signature,
+      url,
+      req.body
+    );
+
+    if (!isValid) {
+      req.log.warn('Twilio webhook signature validation failed');
+      return res.status(403).json({ message: 'Invalid Twilio signature' });
+    }
+    next();
+  },
+  // Actual handler
+  (req: Request, res: Response): void => {
+    handleTwilioWebhookService(req.body);
+    res.sendStatus(200);
+  }
+];
