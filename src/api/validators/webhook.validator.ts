@@ -1,9 +1,15 @@
 import { z } from 'zod';
 
-import { WHATSAPP_INTERACTIVE_TYPES, WHATSAPP_MESSAGE_TYPES } from '@/config/constants';
+import { MESSAGING_INTERACTIVE_TYPES, MESSAGING_TYPES } from '@/config/constants';
 
 export const asterVoipTriggerSchema = z.object({
   customerPhone: z.string().min(10, { message: 'Phone number must be at least 10 digits' }),
+});
+
+export const metaWebhookVerificationSchema = z.object({
+  'hub.mode': z.string(),
+  'hub.verify_token': z.string(),
+  'hub.challenge': z.string(),
 });
 
 export const whatsappFlowResponseSchema = z.object({
@@ -17,9 +23,9 @@ export const whatsappFlowResponseSchema = z.object({
             messages: z.array(
               z.object({
                 from: z.string(),
-                type: z.literal(WHATSAPP_MESSAGE_TYPES.INTERACTIVE),
+                type: z.literal(MESSAGING_TYPES.INTERACTIVE),
                 interactive: z.object({
-                  type: z.literal(WHATSAPP_INTERACTIVE_TYPES.NFM_REPLY),
+                  type: z.literal(MESSAGING_INTERACTIVE_TYPES.META_NFM_REPLY),
                   nfm_reply: z.object({
                     response_json: z.string(),
                   }),
@@ -31,4 +37,12 @@ export const whatsappFlowResponseSchema = z.object({
       ),
     }),
   ),
+});
+
+export const twilioWebhookSchema = z.object({
+  From: z.string(),
+  To: z.string(),
+  Body: z.string(),
+  SmsStatus: z.string(),
+  MessageSid: z.string(),
 });

@@ -1,6 +1,6 @@
 import { EMAIL_CONFIG } from '@/config/constants';
 import { ApiError } from '@/core/errors/ApiError';
-import { FlowResponse } from '@/core/types/whatsapp.types';
+import { FlowResponse } from '@/core/types/messaging.types';
 import { resendClient } from '@/infrastructure/email/resend.client';
 import logger from '@/infrastructure/logging/logger';
 import { apiErrorsTotal, emailNotificationsTotal } from '@/infrastructure/monitoring/metrics';

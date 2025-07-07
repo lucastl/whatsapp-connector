@@ -1,14 +1,21 @@
 import { Request, Response } from 'express';
 
 import { asyncHandler } from '@/api/utils/asyncHandler';
-import { asterVoipTriggerSchema } from '@/api/validators/webhook.validator';
+import {
+  asterVoipTriggerSchema,
+  metaWebhookVerificationSchema,
+} from '@/api/validators/webhook.validator';
 import config from '@/config';
 import { AppError } from '@/core/errors/AppError';
 import {
-  handleIncomingWhatsappMessage,
+  handleIncomingMetaMessage,
+  handleIncomingTwilioMessage,
   triggerSurveyTemplate,
-} from '@/core/services/whatsapp.service';
-import { astervoipTriggersTotal } from '@/infrastructure/monitoring/metrics';
+} from '@/core/services/messaging.service';
+import {
+  astervoipTriggersTotal,
+  messagingWebhookReceivedTotal,
+} from '@/infrastructure/monitoring/metrics';
 
 export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   req.log.info(`AsterVOIP trigger received from: ${req.ip}`);
@@ -34,20 +41,32 @@ export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
 
 export const handleWhatsappWebhook = (req: Request, res: Response): void => {
   req.log.info('WhatsApp webhook event received');
-  handleIncomingWhatsappMessage(req.body);
+
+  messagingWebhookReceivedTotal.inc({ provider: 'meta' });
+
+  handleIncomingMetaMessage(req.body);
   res.sendStatus(200);
 };
 
-export const verifyWhatsappWebhook = (req: Request, res: Response): void => {
-  const mode = req.query['hub.mode'];
-  const token = req.query['hub.verify_token'];
-  const challenge = req.query['hub.challenge'];
+export const verifyMetaWebhook = (req: Request, res: Response): void => {
+  const validationResult = metaWebhookVerificationSchema.safeParse(req.query);
 
-  if (mode && token && mode === 'subscribe' && token === config.whatsapp.verifyToken) {
-    req.log.info('WhatsApp webhook verified successfully!');
-    res.status(200).send(challenge);
+  if (
+    validationResult.success &&
+    validationResult.data['hub.mode'] === 'subscribe' &&
+    validationResult.data['hub.verify_token'] === config.whatsapp.verifyToken
+  ) {
+    req.log.info('Meta webhook verified successfully!');
+    res.status(200).send(validationResult.data['hub.challenge']);
   } else {
-    req.log.error('Failed to verify WhatsApp webhook.');
+    req.log.error('Failed to verify Meta webhook.');
     res.sendStatus(403);
   }
+};
+
+export const handleTwilioWebhook = (req: Request, res: Response): void => {
+  req.log.info('Twilio webhook event received');
+  messagingWebhookReceivedTotal.inc({ provider: 'twilio' });
+  handleIncomingTwilioMessage(req.body);
+  res.sendStatus(200);
 };
