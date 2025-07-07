@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import twilio from 'twilio';
 
 import { asyncHandler } from '@/api/utils/asyncHandler';
 import { asterVoipTriggerSchema } from '@/api/validators/webhook.validator';
@@ -10,7 +11,6 @@ import {
   triggerSurveyTemplate,
 } from '@/core/services/whatsapp.service';
 import { astervoipTriggersTotal } from '@/infrastructure/monitoring/metrics';
-import twilio from 'twilio';
 
 export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   req.log.info(`AsterVOIP trigger received from: ${req.ip}`);
@@ -54,11 +54,14 @@ export const verifyWhatsappWebhook = (req: Request, res: Response): void => {
   }
 };
 
-const twilioAuthToken = config.twilio.authToken; // Make sure this is set in your config
+const twilioAuthToken = config.twilio.authToken;
+if (!twilioAuthToken) {
+  throw new Error('Twilio Auth Token is not set in the configuration.');
+}
 
 export const handleTwilioWebhook = [
   // Twilio signature validation middleware
-  (req: Request, res: Response, next: Function) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const signature = req.headers['x-twilio-signature'] as string;
     // Ensure Express is configured with app.set('trust proxy', 1) in your main app file
     // This ensures req.protocol reflects the original protocol (e.g., 'https') behind a proxy.
@@ -69,16 +72,12 @@ export const handleTwilioWebhook = [
     //    const app = express();
     //    app.set('trust proxy', 1);
     const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
-    const isValid = twilio.validateRequest(
-      twilioAuthToken,
-      signature,
-      url,
-      req.body
-    );
+    const isValid = twilio.validateRequest(twilioAuthToken, signature, url, req.body);
 
     if (!isValid) {
       req.log.warn('Twilio webhook signature validation failed');
-      return res.status(403).json({ message: 'Invalid Twilio signature' });
+      res.status(403).json({ message: 'Invalid Twilio signature' });
+      return;
     }
     next();
   },
@@ -86,5 +85,5 @@ export const handleTwilioWebhook = [
   (req: Request, res: Response): void => {
     handleTwilioWebhookService(req.body);
     res.sendStatus(200);
-  }
+  },
 ];

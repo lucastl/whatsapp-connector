@@ -40,6 +40,8 @@ app.get('/health', (_req, res) => {
 
 app.use(globalErrorHandler);
 
-app.listen(config.port, () => {
+const server = app.listen(config.port, () => {
   logger.info(`Server running on http://localhost:${config.port}`);
 });
+
+export { app, server };

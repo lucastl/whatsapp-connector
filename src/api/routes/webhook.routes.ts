@@ -2,9 +2,9 @@ import { Router } from 'express';
 
 import {
   handleAsterVoipTrigger,
+  handleTwilioWebhook,
   handleWhatsappWebhook,
   verifyWhatsappWebhook,
-  handleTwilioWebhook,
 } from '@/api/controllers/webhook.controller';
 import { verifyAsterVoipToken } from '@/api/middlewares/auth.middleware';
 
@@ -36,6 +36,6 @@ webhookRouter.get('/whatsapp', verifyWhatsappWebhook);
  * @desc    Endpoint that receives events from the Twilio API
  * @access  Public
  */
-webhookRouter.post('/twilio', handleTwilioWebhook);
+webhookRouter.post('/twilio', ...handleTwilioWebhook);
 
 export default webhookRouter;
