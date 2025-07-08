@@ -9,7 +9,8 @@ import config from '@/config';
 import { AppError } from '@/core/errors/AppError';
 import {
   handleIncomingMetaMessage,
-  handleIncomingTwilioMessage,
+  handleIncomingTwilioSurvey,
+  handleTwilioStatusUpdate,
   triggerSurveyTemplate,
 } from '@/core/services/messaging.service';
 import {
@@ -64,9 +65,17 @@ export const verifyMetaWebhook = (req: Request, res: Response): void => {
   }
 };
 
-export const handleTwilioWebhook = (req: Request, res: Response): void => {
-  req.log.info('Twilio webhook event received');
-  messagingWebhookReceivedTotal.inc({ provider: 'twilio' });
-  handleIncomingTwilioMessage(req.body);
+export const handleTwilioStatusWebhook = (req: Request, res: Response): void => {
+  req.log.info('Twilio status callback received');
+  handleTwilioStatusUpdate(req.body);
   res.sendStatus(200);
 };
+
+export const handleTwilioSurveyWebhook = asyncHandler(async (req, res) => {
+  req.log.info('Twilio Survey webhook received');
+  messagingWebhookReceivedTotal.inc({ provider: 'twilio' });
+
+  await handleIncomingTwilioSurvey(req.body);
+
+  res.sendStatus(200);
+});

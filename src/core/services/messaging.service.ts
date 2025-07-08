@@ -1,4 +1,5 @@
 import {
+  twilioStatusCallbackSchema,
   twilioWebhookSchema,
   whatsappFlowResponseSchema,
 } from '@/api/validators/webhook.validator';
@@ -6,13 +7,14 @@ import config from '@/config';
 import { MESSAGING_TYPES, META_TEMPLATE_NAME } from '@/config/constants';
 import { ApiError } from '@/core/errors/ApiError';
 import { AppError } from '@/core/errors/AppError';
-import { MetaWebhookPayload, SurveyResponse } from '@/core/types/messaging.types';
+import { MetaWebhookPayload } from '@/core/types/messaging.types';
 import logger from '@/infrastructure/logging/logger';
 import {
   apiErrorsTotal,
   messagingFlowsCompleted,
   messagingFlowsProcessingErrors,
   messagingInvalidPayloadsTotal,
+  messagingStatusUpdatesTotal,
   messagingTemplatesSentTotal,
 } from '@/infrastructure/monitoring/metrics';
 import { whatsappHttpClient } from '@/infrastructure/providers/meta/whatsapp.httpClient';
@@ -92,47 +94,54 @@ export const handleIncomingMetaMessage = (payload: MetaWebhookPayload): void => 
   }
 };
 
-const _parseTwilioBody = (body: string): SurveyResponse => {
-  const response: Record<string, string> = {};
-  const lines = body.split('\n');
-  lines.forEach((line) => {
-    const parts = line.split(':');
-    if (parts.length === 2) {
-      const key = parts[0].trim().toLowerCase().replace(/ /g, '_');
-      const value = parts[1].trim();
-      response[key] = value;
-    }
-  });
-  return {
-    product_interest: response.product_interest || '',
-    best_time_to_call: response.best_time_to_call || '',
-    ...response,
-  };
+export const handleTwilioStatusUpdate = (payload: unknown): void => {
+  const validationResult = twilioStatusCallbackSchema.safeParse(payload);
+
+  if (!validationResult.success) {
+    logger.warn(
+      { errors: validationResult.error.format() },
+      'Invalid Twilio status callback received',
+    );
+    // Opcional: podrías tener una métrica separada para validaciones de status fallidas
+    return;
+  }
+
+  const { MessageSid, MessageStatus, ErrorCode, ErrorMessage } = validationResult.data;
+
+  messagingStatusUpdatesTotal.inc({ provider: 'twilio', status: MessageStatus });
+
+  if (MessageStatus === 'failed' || MessageStatus === 'undelivered') {
+    logger.error({ MessageSid, ErrorCode, ErrorMessage }, 'Message delivery failed');
+  } else {
+    logger.info(
+      { MessageSid, status: MessageStatus },
+      'Received message status update from Twilio',
+    );
+  }
 };
 
-export const handleIncomingTwilioMessage = (payload: unknown): void => {
+export const handleIncomingTwilioSurvey = async (payload: unknown): Promise<void> => {
   const validationResult = twilioWebhookSchema.safeParse(payload);
 
   if (!validationResult.success) {
     logger.warn(
       { errors: validationResult.error.format() },
-      'Invalid Twilio webhook payload received',
+      'Invalid Twilio Studio webhook payload received',
     );
-    messagingInvalidPayloadsTotal.inc({ provider: 'twilio' });
+    messagingInvalidPayloadsTotal.inc({ provider: 'twilio_studio' });
     return;
   }
 
-  const { From: customerPhoneWithPrefix, Body } = validationResult.data;
-  const customerPhone = customerPhoneWithPrefix.replace('whatsapp:', '');
+  const { customerPhone: phoneWithPrefix, surveyResponse } = validationResult.data;
+  const customerPhone = phoneWithPrefix.replace('whatsapp:', '');
 
   try {
-    const flowResponse = _parseTwilioBody(Body);
-    logger.info({ customerPhone, flowResponse }, 'Twilio response received and parsed');
+    logger.info({ customerPhone, surveyResponse }, 'Twilio Studio response received and validated');
 
     messagingFlowsCompleted.inc({ provider: 'twilio' });
-    sendEnrichedEmail(customerPhone, flowResponse);
+    await sendEnrichedEmail(customerPhone, surveyResponse);
   } catch (error) {
     messagingFlowsProcessingErrors.inc({ provider: 'twilio' });
-    logger.error(error, 'Error processing incoming Twilio message.');
+    logger.error(error, 'Error processing incoming Twilio Studio message.');
   }
 };

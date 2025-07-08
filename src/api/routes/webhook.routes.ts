@@ -2,7 +2,8 @@ import { Router } from 'express';
 
 import {
   handleAsterVoipTrigger,
-  handleTwilioWebhook,
+  handleTwilioStatusWebhook,
+  handleTwilioSurveyWebhook,
   handleWhatsappWebhook,
   verifyMetaWebhook,
 } from '@/api/controllers/webhook.controller';
@@ -33,9 +34,16 @@ webhookRouter.get('/whatsapp', verifyMetaWebhook);
 
 /**
  * @route   POST /api/v1/webhooks/twilio
- * @desc    Endpoint that receives events from the Twilio API.
+ * @desc    Endpoint that receives the final JSON payload from a Twilio Studio Flow.
  * @access  Public
  */
-webhookRouter.post('/twilio', handleTwilioWebhook);
+webhookRouter.post('/twilio', handleTwilioSurveyWebhook);
+
+/**
+ * @route   POST /api/v1/webhooks/twilio-status
+ * @desc    Endpoint that receives status updates from Twilio for sent messages.
+ * @access  Public
+ */
+webhookRouter.post('/twilio-status', handleTwilioStatusWebhook);
 
 export default webhookRouter;

@@ -39,10 +39,19 @@ export const whatsappFlowResponseSchema = z.object({
   ),
 });
 
-export const twilioWebhookSchema = z.object({
-  From: z.string(),
-  To: z.string(),
-  Body: z.string(),
-  SmsStatus: z.string(),
+export const twilioStatusCallbackSchema = z.object({
   MessageSid: z.string(),
+  MessageStatus: z.string(), // e.g., 'queued', 'sent', 'delivered', 'failed'
+  To: z.string(),
+  From: z.string(),
+  ErrorCode: z.union([z.string(), z.number()]).optional(),
+  ErrorMessage: z.string().optional(),
+});
+
+export const twilioWebhookSchema = z.object({
+  customerPhone: z.string().startsWith('whatsapp:'),
+  surveyResponse: z.object({
+    product_interest: z.string().optional(),
+    best_time_to_call: z.string().optional(),
+  }),
 });

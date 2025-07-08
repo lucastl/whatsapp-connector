@@ -89,6 +89,15 @@ export const emailNotificationsTotal = new Counter({
 });
 
 /**
+ * Métrica para actualizaciones de estado de mensajes salientes.
+ */
+export const messagingStatusUpdatesTotal = new Counter({
+  name: 'messaging_status_updates_total',
+  help: 'Total de actualizaciones de estado de mensajes salientes recibidas.',
+  labelNames: ['provider', 'status'], // status: 'sent', 'delivered', 'failed', etc.
+});
+
+/**
  * Métricas de Seguridad
  */
 export const blockedIpsTotal = new Counter({
