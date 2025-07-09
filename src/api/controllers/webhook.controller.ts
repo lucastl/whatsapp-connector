@@ -7,16 +7,20 @@ import {
 } from '@/api/validators/webhook.validator';
 import config from '@/config';
 import { AppError } from '@/core/errors/AppError';
-import {
-  handleIncomingMetaMessage,
-  handleIncomingTwilioSurvey,
-  handleTwilioStatusUpdate,
-  triggerSurveyTemplate,
-} from '@/core/services/messaging.service';
+import { createEmailService } from '@/core/services/email.service';
+import { createMessagingService } from '@/core/services/messaging.service';
+import { resendClient } from '@/infrastructure/email/resend.client';
 import {
   astervoipTriggersTotal,
   messagingWebhookReceivedTotal,
 } from '@/infrastructure/monitoring/metrics';
+import { whatsappHttpClient } from '@/infrastructure/providers/meta/whatsapp.httpClient';
+import { twilioClient } from '@/infrastructure/providers/twilio/twilio.client';
+
+// --- Instanciación de Servicios con Inyección de Dependencias ---
+const emailService = createEmailService(resendClient);
+const messagingService = createMessagingService(emailService, whatsappHttpClient, twilioClient);
+// ----------------------------------------------------------------
 
 export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   req.log.info(`AsterVOIP trigger received from: ${req.ip}`);
@@ -33,7 +37,7 @@ export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   astervoipTriggersTotal.inc({ status: 'success' });
 
   const { customerPhone } = validationResult.data;
-  await triggerSurveyTemplate(customerPhone);
+  await messagingService.triggerSurveyTemplate(customerPhone);
 
   req.log.info(`WhatsApp Template trigger initiated for customer: ${customerPhone}`);
 
@@ -45,7 +49,7 @@ export const handleWhatsappWebhook = (req: Request, res: Response): void => {
 
   messagingWebhookReceivedTotal.inc({ provider: 'meta' });
 
-  handleIncomingMetaMessage(req.body);
+  messagingService.handleIncomingMetaMessage(req.body);
   res.sendStatus(200);
 };
 
@@ -67,7 +71,7 @@ export const verifyMetaWebhook = (req: Request, res: Response): void => {
 
 export const handleTwilioStatusWebhook = (req: Request, res: Response): void => {
   req.log.info('Twilio status callback received');
-  handleTwilioStatusUpdate(req.body);
+  messagingService.handleTwilioStatusUpdate(req.body);
   res.sendStatus(200);
 };
 
@@ -75,7 +79,7 @@ export const handleTwilioSurveyWebhook = asyncHandler(async (req, res) => {
   req.log.info('Twilio Survey webhook received');
   messagingWebhookReceivedTotal.inc({ provider: 'twilio' });
 
-  await handleIncomingTwilioSurvey(req.body);
+  await messagingService.handleIncomingTwilioSurvey(req.body);
 
   res.sendStatus(200);
 });

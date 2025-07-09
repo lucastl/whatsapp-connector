@@ -1,11 +1,13 @@
+import { Resend } from 'resend';
+
 import { EMAIL_CONFIG } from '@/config/constants';
 import { ApiError } from '@/core/errors/ApiError';
-import { FlowResponse } from '@/core/types/messaging.types';
-import { resendClient } from '@/infrastructure/email/resend.client';
+import { SurveyResponse } from '@/core/types/messaging.types';
 import logger from '@/infrastructure/logging/logger';
 import { apiErrorsTotal, emailNotificationsTotal } from '@/infrastructure/monitoring/metrics';
 
-const generateSurveyEmailHtml = (customerPhone: string, surveyData: FlowResponse): string => {
+// La función ahora es privada del módulo
+const generateSurveyEmailHtml = (customerPhone: string, surveyData: SurveyResponse): string => {
   const surveyItems = Object.entries(surveyData)
     .map(([key, value]) => {
       const formattedKey = key.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
@@ -23,33 +25,41 @@ const generateSurveyEmailHtml = (customerPhone: string, surveyData: FlowResponse
   `;
 };
 
-export const sendEnrichedEmail = async (
-  customerPhone: string,
-  surveyData: FlowResponse,
-): Promise<void> => {
-  logger.info(`Preparing enriched email via Resend for ${customerPhone}`);
+// Definimos el tipo para el cliente de Resend para que sea más explícito
+export type ResendClient = Pick<Resend, 'emails'>;
 
-  const emailSubject = `Nuevo Lead Calificado de WhatsApp: ${customerPhone}`;
-  const emailHtmlBody = generateSurveyEmailHtml(customerPhone, surveyData);
+// Definimos la interfaz del servicio
+export interface IEmailService {
+  sendEnrichedEmail(customerPhone: string, surveyData: SurveyResponse): Promise<void>;
+}
 
-  try {
-    const { data, error } = await resendClient.emails.send({
-      from: EMAIL_CONFIG.FROM_ADDRESS,
-      to: EMAIL_CONFIG.SALES_TEAM_LIST,
-      subject: emailSubject,
-      html: emailHtmlBody,
-    });
+// Creamos una "factoría" que construye el servicio con sus dependencias
+export const createEmailService = (resendClient: ResendClient): IEmailService => ({
+  async sendEnrichedEmail(customerPhone: string, surveyData: SurveyResponse): Promise<void> {
+    logger.info(`Preparing enriched email via Resend for ${customerPhone}`);
 
-    if (error) {
-      throw error;
+    const emailSubject = `Nuevo Lead Calificado de WhatsApp: ${customerPhone}`;
+    const emailHtmlBody = generateSurveyEmailHtml(customerPhone, surveyData);
+
+    try {
+      const { data, error } = await resendClient.emails.send({
+        from: EMAIL_CONFIG.FROM_ADDRESS,
+        to: EMAIL_CONFIG.SALES_TEAM_LIST,
+        subject: emailSubject,
+        html: emailHtmlBody,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      emailNotificationsTotal.inc({ status: 'success' });
+      logger.info({ messageId: data?.id }, `Enriched email sent successfully via Resend.`);
+    } catch (error) {
+      emailNotificationsTotal.inc({ status: 'failed' });
+      apiErrorsTotal.inc({ service: 'resend' });
+      const apiError = new ApiError('Resend', error);
+      logger.error(apiError, 'Failed to send email via Resend');
     }
-
-    emailNotificationsTotal.inc({ status: 'success' });
-    logger.info({ messageId: data?.id }, `Enriched email sent successfully via Resend.`);
-  } catch (error) {
-    emailNotificationsTotal.inc({ status: 'failed' });
-    apiErrorsTotal.inc({ service: 'resend' });
-    const apiError = new ApiError('Resend', error);
-    logger.error(apiError, 'Failed to send email via Resend');
-  }
-};
+  },
+});
