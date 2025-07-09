@@ -1,5 +1,7 @@
 import { AxiosResponse } from 'axios';
 
+import { externalApiRequestDurationSeconds } from '@/infrastructure/monitoring/metrics';
+
 import { whatsappApi } from './whatsapp.client'; // <-- Importa la instancia
 
 export interface IWhatsappHttpClient {
@@ -7,7 +9,12 @@ export interface IWhatsappHttpClient {
 }
 
 export const whatsappHttpClient: IWhatsappHttpClient = {
-  post: <T, D = unknown>(url: string, data: D): Promise<AxiosResponse<T>> => {
-    return whatsappApi.post<T>(url, data);
+  post: async <T, D = unknown>(url: string, data: D): Promise<AxiosResponse<T>> => {
+    const end = externalApiRequestDurationSeconds.startTimer({ service: 'meta' });
+    try {
+      return await whatsappApi.post<T>(url, data);
+    } finally {
+      end();
+    }
   },
 };

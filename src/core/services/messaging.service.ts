@@ -13,6 +13,7 @@ import { MetaWebhookPayload } from '@/core/types/messaging.types';
 import logger from '@/infrastructure/logging/logger';
 import {
   apiErrorsTotal,
+  externalApiRequestDurationSeconds,
   messagingFlowsCompleted,
   messagingFlowsProcessingErrors,
   messagingInvalidPayloadsTotal,
@@ -63,7 +64,12 @@ export const createMessagingService = (
       to: `whatsapp:${customerPhone}`,
     };
     logger.info({ payload }, `Sending template via Twilio to ${customerPhone}`);
-    await twilioClient.messages.create(payload);
+    const end = externalApiRequestDurationSeconds.startTimer({ service: 'twilio' });
+    try {
+      await twilioClient.messages.create(payload);
+    } finally {
+      end();
+    }
   };
 
   return {

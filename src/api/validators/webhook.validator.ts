@@ -51,7 +51,9 @@ export const twilioStatusCallbackSchema = z.object({
 export const twilioWebhookSchema = z.object({
   customerPhone: z.string().startsWith('whatsapp:'),
   surveyResponse: z.object({
+    zone: z.string().optional(),
     product_interest: z.string().optional(),
-    best_time_to_call: z.string().optional(),
+    preferred_contact: z.string().optional(),
+    current_amount: z.string().optional(),
   }),
 });

@@ -1,4 +1,7 @@
-import { Counter, Histogram, register } from 'prom-client';
+import { Counter, Histogram, register, collectDefaultMetrics } from 'prom-client';
+
+// Inicia la recolección de métricas por defecto de Node.js (CPU, memoria, etc.)
+collectDefaultMetrics();
 
 /**
  * Métrica de propósito general para la duración de las peticiones HTTP.
@@ -8,6 +11,16 @@ export const httpRequestDurationMicroseconds = new Histogram({
   help: 'Duración de las peticiones HTTP en segundos',
   labelNames: ['method', 'route', 'code'],
   buckets: [0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7, 10],
+});
+
+/**
+ * Métrica para la duración de las llamadas a APIs externas.
+ */
+export const externalApiRequestDurationSeconds = new Histogram({
+  name: 'external_api_request_duration_seconds',
+  help: 'Duración de las peticiones a APIs externas en segundos.',
+  labelNames: ['service'], // 'meta', 'twilio', 'resend'
+  buckets: [0.05, 0.1, 0.3, 0.5, 1, 2, 5],
 });
 
 /**

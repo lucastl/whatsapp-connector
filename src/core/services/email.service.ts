@@ -4,7 +4,11 @@ import { EMAIL_CONFIG } from '@/config/constants';
 import { ApiError } from '@/core/errors/ApiError';
 import { SurveyResponse } from '@/core/types/messaging.types';
 import logger from '@/infrastructure/logging/logger';
-import { apiErrorsTotal, emailNotificationsTotal } from '@/infrastructure/monitoring/metrics';
+import {
+  apiErrorsTotal,
+  emailNotificationsTotal,
+  externalApiRequestDurationSeconds,
+} from '@/infrastructure/monitoring/metrics';
 
 // La función ahora es privada del módulo
 const generateSurveyEmailHtml = (customerPhone: string, surveyData: SurveyResponse): string => {
@@ -41,6 +45,7 @@ export const createEmailService = (resendClient: ResendClient): IEmailService =>
     const emailSubject = `Nuevo Lead Calificado de WhatsApp: ${customerPhone}`;
     const emailHtmlBody = generateSurveyEmailHtml(customerPhone, surveyData);
 
+    const end = externalApiRequestDurationSeconds.startTimer({ service: 'resend' });
     try {
       const { data, error } = await resendClient.emails.send({
         from: EMAIL_CONFIG.FROM_ADDRESS,
@@ -60,6 +65,8 @@ export const createEmailService = (resendClient: ResendClient): IEmailService =>
       apiErrorsTotal.inc({ service: 'resend' });
       const apiError = new ApiError('Resend', error);
       logger.error(apiError, 'Failed to send email via Resend');
+    } finally {
+      end();
     }
   },
 });
