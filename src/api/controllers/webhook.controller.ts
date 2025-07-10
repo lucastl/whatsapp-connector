@@ -6,6 +6,7 @@ import {
   metaWebhookVerificationSchema,
 } from '@/api/validators/webhook.validator';
 import config from '@/config';
+import { METRIC_STATUS, SERVICE_NAMES } from '@/config/constants';
 import { AppError } from '@/core/errors/AppError';
 import { createEmailService } from '@/core/services/email.service';
 import { createMessagingService } from '@/core/services/messaging.service';
@@ -27,14 +28,14 @@ export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
 
   const validationResult = asterVoipTriggerSchema.safeParse(req.body);
   if (!validationResult.success) {
-    astervoipTriggersTotal.inc({ status: 'validation_error' });
+    astervoipTriggersTotal.inc({ status: METRIC_STATUS.VALIDATION_ERROR });
     throw new AppError('The request body contains invalid data.', 400, {
       error: validationResult.error.format(),
       body: req.body,
     });
   }
 
-  astervoipTriggersTotal.inc({ status: 'success' });
+  astervoipTriggersTotal.inc({ status: METRIC_STATUS.SUCCESS });
 
   const { customerPhone } = validationResult.data;
   await messagingService.triggerSurveyTemplate(customerPhone);
@@ -47,7 +48,7 @@ export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
 export const handleWhatsappWebhook = (req: Request, res: Response): void => {
   req.log.info('WhatsApp webhook event received');
 
-  messagingWebhookReceivedTotal.inc({ provider: 'meta' });
+  messagingWebhookReceivedTotal.inc({ provider: SERVICE_NAMES.META });
 
   messagingService.handleIncomingMetaMessage(req.body);
   res.sendStatus(200);
@@ -77,7 +78,7 @@ export const handleTwilioStatusWebhook = (req: Request, res: Response): void => 
 
 export const handleTwilioSurveyWebhook = asyncHandler(async (req, res) => {
   req.log.info('Twilio Survey webhook received');
-  messagingWebhookReceivedTotal.inc({ provider: 'twilio' });
+  messagingWebhookReceivedTotal.inc({ provider: SERVICE_NAMES.TWILIO });
 
   await messagingService.handleIncomingTwilioSurvey(req.body);
 

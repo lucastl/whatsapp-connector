@@ -19,3 +19,27 @@ export const MESSAGING_TYPES = {
   INTERACTIVE: 'interactive',
   TEMPLATE: 'template',
 };
+
+export const SERVICE_NAMES = {
+  META: 'meta',
+  TWILIO: 'twilio',
+  RESEND: 'resend',
+  ASTERVOIP: 'astervoip',
+};
+
+export const METRIC_STATUS = {
+  SUCCESS: 'success',
+  VALIDATION_ERROR: 'validation_error',
+  SERVER_ERROR: 'server_error',
+  FAILED: 'failed',
+  UNDELIVERED: 'undelivered',
+};
+
+export const AUTH_TOKEN_REASONS = {
+  MISSING_OR_MALFORMED: 'missing_or_malformed',
+  INVALID_TOKEN: 'invalid_token',
+};
+
+export const MESSAGING_PREFIXES = {
+  WHATSAPP: 'whatsapp:',
+};

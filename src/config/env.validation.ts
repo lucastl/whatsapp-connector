@@ -1,9 +1,13 @@
 import { z } from 'zod';
 
+import { SERVICE_NAMES } from './constants';
+
 const envSchema = z
   .object({
     PORT: z.coerce.number().int().positive().default(3000),
-    MESSAGING_PROVIDER: z.enum(['meta', 'twilio']).default('meta'),
+    MESSAGING_PROVIDER: z
+      .enum([SERVICE_NAMES.META, SERVICE_NAMES.TWILIO])
+      .default(SERVICE_NAMES.META),
     ASTERVOIP_AUTH_TOKEN: z.string().min(1),
     RESEND_API_KEY: z.string().min(1),
     ALLOWED_IPS: z.string().optional(),
@@ -22,12 +26,16 @@ const envSchema = z
   .refine(
     (data) => {
       if (data.MESSAGING_PROVIDER === 'meta') {
-        return !!data.WHATSAPP_API_TOKEN && !!data.WHATSAPP_PHONE_NUMBER_ID && !!data.WHATSAPP_VERIFY_TOKEN;
+        return (
+          !!data.WHATSAPP_API_TOKEN &&
+          !!data.WHATSAPP_PHONE_NUMBER_ID &&
+          !!data.WHATSAPP_VERIFY_TOKEN
+        );
       }
       return true;
     },
     {
-      message: 'El proveedor "meta" requiere WHATSAPP_API_TOKEN, WHATSAPP_PHONE_NUMBER_ID, y WHATSAPP_VERIFY_TOKEN',
+      message: `El proveedor "${SERVICE_NAMES.META}" requiere WHATSAPP_API_TOKEN, WHATSAPP_PHONE_NUMBER_ID, y WHATSAPP_VERIFY_TOKEN`,
       path: ['MESSAGING_PROVIDER'],
     },
   )
@@ -44,8 +52,7 @@ const envSchema = z
       return true;
     },
     {
-      message:
-        'El proveedor "twilio" requiere TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER, y TWILIO_TEMPLATE_SID',
+      message: `El proveedor "${SERVICE_NAMES.TWILIO}" requiere TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER, y TWILIO_TEMPLATE_SID`,
       path: ['MESSAGING_PROVIDER'],
     },
   );

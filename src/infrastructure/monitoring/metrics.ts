@@ -1,4 +1,4 @@
-import { Counter, Histogram, register, collectDefaultMetrics } from 'prom-client';
+import { collectDefaultMetrics, Counter, Histogram, register } from 'prom-client';
 
 // Inicia la recolección de métricas por defecto de Node.js (CPU, memoria, etc.)
 collectDefaultMetrics();
@@ -19,13 +19,13 @@ export const httpRequestDurationMicroseconds = new Histogram({
 export const externalApiRequestDurationSeconds = new Histogram({
   name: 'external_api_request_duration_seconds',
   help: 'Duración de las peticiones a APIs externas en segundos.',
-  labelNames: ['service'], // 'meta', 'twilio', 'resend'
+  labelNames: ['service'], // SERVICE_NAMES.META, SERVICE_NAMES.TWILIO, SERVICE_NAMES.RESEND
   buckets: [0.05, 0.1, 0.3, 0.5, 1, 2, 5],
 });
 
 /**
  * Métrica de propósito general para errores de comunicación con APIs de terceros.
- * El label 'service' puede ser 'meta', 'twilio', 'resend', etc.
+ * El label 'service' puede ser SERVICE_NAMES.META, SERVICE_NAMES.TWILIO, SERVICE_NAMES.RESEND, etc.
  */
 export const apiErrorsTotal = new Counter({
   name: 'api_errors_total',
@@ -39,7 +39,7 @@ export const apiErrorsTotal = new Counter({
 export const astervoipTriggersTotal = new Counter({
   name: 'astervoip_triggers_total',
   help: 'Total de requests recibidos desde AsterVOIP',
-  labelNames: ['status'], // e.g., 'success', 'validation_error', 'server_error'
+  labelNames: ['status'], // e.g., METRIC_STATUS.SUCCESS, METRIC_STATUS.VALIDATION_ERROR, METRIC_STATUS.SERVER_ERROR
 });
 
 /**
@@ -98,7 +98,7 @@ export const messagingFlowsProcessingErrors = new Counter({
 export const emailNotificationsTotal = new Counter({
   name: 'email_notifications_total',
   help: 'Total de notificaciones por email enviadas',
-  labelNames: ['status'], // 'success' o 'failed'
+  labelNames: ['status'], // METRIC_STATUS.SUCCESS o METRIC_STATUS.FAILED
 });
 
 /**
@@ -107,7 +107,7 @@ export const emailNotificationsTotal = new Counter({
 export const messagingStatusUpdatesTotal = new Counter({
   name: 'messaging_status_updates_total',
   help: 'Total de actualizaciones de estado de mensajes salientes recibidas.',
-  labelNames: ['provider', 'status'], // status: 'sent', 'delivered', 'failed', etc.
+  labelNames: ['provider', 'status'], // status: METRIC_STATUS.SENT, METRIC_STATUS.DELIVERED, METRIC_STATUS.FAILED, etc.
 });
 
 /**

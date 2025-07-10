@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-import { EMAIL_CONFIG } from '@/config/constants';
+import { EMAIL_CONFIG, SERVICE_NAMES } from '@/config/constants';
 import { ApiError } from '@/core/errors/ApiError';
 import { SurveyResponse } from '@/core/types/messaging.types';
 import logger from '@/infrastructure/logging/logger';
@@ -45,7 +45,7 @@ export const createEmailService = (resendClient: ResendClient): IEmailService =>
     const emailSubject = `Nuevo Lead Calificado de WhatsApp: ${customerPhone}`;
     const emailHtmlBody = generateSurveyEmailHtml(customerPhone, surveyData);
 
-    const end = externalApiRequestDurationSeconds.startTimer({ service: 'resend' });
+    const end = externalApiRequestDurationSeconds.startTimer({ service: SERVICE_NAMES.RESEND });
     try {
       const { data, error } = await resendClient.emails.send({
         from: EMAIL_CONFIG.FROM_ADDRESS,
@@ -62,7 +62,7 @@ export const createEmailService = (resendClient: ResendClient): IEmailService =>
       logger.info({ messageId: data?.id }, `Enriched email sent successfully via Resend.`);
     } catch (error) {
       emailNotificationsTotal.inc({ status: 'failed' });
-      apiErrorsTotal.inc({ service: 'resend' });
+      apiErrorsTotal.inc({ service: SERVICE_NAMES.RESEND });
       const apiError = new ApiError('Resend', error);
       logger.error(apiError, 'Failed to send email via Resend');
     } finally {

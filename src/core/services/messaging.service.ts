@@ -6,7 +6,12 @@ import {
   whatsappFlowResponseSchema,
 } from '@/api/validators/webhook.validator';
 import config from '@/config';
-import { MESSAGING_TYPES, META_TEMPLATE_NAME } from '@/config/constants';
+import {
+  MESSAGING_TYPES,
+  META_TEMPLATE_NAME,
+  METRIC_STATUS,
+  SERVICE_NAMES,
+} from '@/config/constants';
 import { ApiError } from '@/core/errors/ApiError';
 import { AppError } from '@/core/errors/AppError';
 import { MetaWebhookPayload } from '@/core/types/messaging.types';
@@ -56,7 +61,7 @@ export const createMessagingService = (
 
   const _sendWithTwilio = async (customerPhone: string) => {
     if (!twilioClient || !config.twilio.whatsappNumber) {
-      throw new AppError('Twilio client is not configured correctly.', 500);
+      throw new AppError(`${SERVICE_NAMES.TWILIO} client is not configured correctly.`, 500);
     }
     const payload = {
       contentSid: config.twilio.templateSid,
@@ -64,7 +69,7 @@ export const createMessagingService = (
       to: `whatsapp:${customerPhone}`,
     };
     logger.info({ payload }, `Sending template via Twilio to ${customerPhone}`);
-    const end = externalApiRequestDurationSeconds.startTimer({ service: 'twilio' });
+    const end = externalApiRequestDurationSeconds.startTimer({ service: SERVICE_NAMES.TWILIO });
     try {
       await twilioClient.messages.create(payload);
     } finally {
@@ -78,7 +83,7 @@ export const createMessagingService = (
       logger.info(`Sending survey template to ${customerPhone} using provider: ${provider}`);
 
       try {
-        if (provider === 'twilio') {
+        if (provider === SERVICE_NAMES.TWILIO) {
           await _sendWithTwilio(customerPhone);
         } else {
           await _sendWithMeta(customerPhone);
@@ -86,7 +91,8 @@ export const createMessagingService = (
         messagingTemplatesSentTotal.inc({ provider });
         logger.info(`Template sent successfully to ${customerPhone} via ${provider}`);
       } catch (error) {
-        const serviceName = provider === 'twilio' ? 'Twilio' : 'Meta';
+        const serviceName =
+          provider === SERVICE_NAMES.TWILIO ? SERVICE_NAMES.TWILIO : SERVICE_NAMES.META;
         apiErrorsTotal.inc({ service: serviceName.toLowerCase() });
         throw new ApiError(serviceName, error);
       }
@@ -100,7 +106,7 @@ export const createMessagingService = (
             { errors: validationResult.error.format() },
             'Invalid Meta webhook payload received',
           );
-          messagingInvalidPayloadsTotal.inc({ provider: 'meta' });
+          messagingInvalidPayloadsTotal.inc({ provider: SERVICE_NAMES.META });
           return;
         }
         const message = validationResult.data.entry[0].changes[0].value.messages[0];
@@ -108,10 +114,10 @@ export const createMessagingService = (
         const flowResponse = JSON.parse(message.interactive.nfm_reply.response_json);
 
         logger.info({ customerPhone, flowResponse }, 'Flow response received and validated');
-        messagingFlowsCompleted.inc({ provider: 'meta' });
+        messagingFlowsCompleted.inc({ provider: SERVICE_NAMES.META });
         emailService.sendEnrichedEmail(customerPhone, flowResponse);
       } catch (error) {
-        messagingFlowsProcessingErrors.inc({ provider: 'meta' });
+        messagingFlowsProcessingErrors.inc({ provider: SERVICE_NAMES.META });
         logger.error(error, 'Error processing incoming Meta message. Payload will be ignored.');
       }
     },
@@ -129,9 +135,9 @@ export const createMessagingService = (
 
       const { MessageSid, MessageStatus, ErrorCode, ErrorMessage } = validationResult.data;
 
-      messagingStatusUpdatesTotal.inc({ provider: 'twilio', status: MessageStatus });
+      messagingStatusUpdatesTotal.inc({ provider: SERVICE_NAMES.TWILIO, status: MessageStatus });
 
-      if (MessageStatus === 'failed' || MessageStatus === 'undelivered') {
+      if (MessageStatus === METRIC_STATUS.FAILED || MessageStatus === METRIC_STATUS.UNDELIVERED) {
         logger.error({ MessageSid, ErrorCode, ErrorMessage }, 'Message delivery failed');
       } else {
         logger.info(
@@ -149,7 +155,7 @@ export const createMessagingService = (
           { errors: validationResult.error.format() },
           'Invalid Twilio Studio webhook payload received',
         );
-        messagingInvalidPayloadsTotal.inc({ provider: 'twilio_studio' });
+        messagingInvalidPayloadsTotal.inc({ provider: SERVICE_NAMES.TWILIO });
         return;
       }
 
@@ -157,12 +163,15 @@ export const createMessagingService = (
       const customerPhone = phoneWithPrefix.replace('whatsapp:', '');
 
       try {
-        logger.info({ customerPhone, surveyResponse }, 'Twilio Studio response received and validated');
+        logger.info(
+          { customerPhone, surveyResponse },
+          'Twilio Studio response received and validated',
+        );
 
-        messagingFlowsCompleted.inc({ provider: 'twilio' });
+        messagingFlowsCompleted.inc({ provider: SERVICE_NAMES.TWILIO });
         await emailService.sendEnrichedEmail(customerPhone, surveyResponse);
       } catch (error) {
-        messagingFlowsProcessingErrors.inc({ provider: 'twilio' });
+        messagingFlowsProcessingErrors.inc({ provider: SERVICE_NAMES.TWILIO });
         logger.error(error, 'Error processing incoming Twilio Studio message.');
       }
     },

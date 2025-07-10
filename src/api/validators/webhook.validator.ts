@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
-import { MESSAGING_INTERACTIVE_TYPES, MESSAGING_TYPES } from '@/config/constants';
+import {
+  MESSAGING_INTERACTIVE_TYPES,
+  MESSAGING_PREFIXES,
+  MESSAGING_TYPES,
+} from '@/config/constants';
 
 export const asterVoipTriggerSchema = z.object({
   customerPhone: z.string().min(10, { message: 'Phone number must be at least 10 digits' }),
@@ -49,7 +53,7 @@ export const twilioStatusCallbackSchema = z.object({
 });
 
 export const twilioWebhookSchema = z.object({
-  customerPhone: z.string().startsWith('whatsapp:'),
+  customerPhone: z.string().startsWith(MESSAGING_PREFIXES.WHATSAPP),
   surveyResponse: z.object({
     zone: z.string().optional(),
     product_interest: z.string().optional(),

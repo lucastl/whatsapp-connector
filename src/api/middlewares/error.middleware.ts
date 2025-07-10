@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
+import { METRIC_STATUS } from '@/config/constants';
 import { AppError } from '@/core/errors/AppError';
 import { astervoipTriggersTotal } from '@/infrastructure/monitoring/metrics';
 
@@ -14,7 +15,7 @@ export const globalErrorHandler = (
   if (req.path.includes('/astervoip-trigger')) {
     const isClientError = err instanceof AppError && err.statusCode >= 400 && err.statusCode < 500;
     if (!isClientError) {
-      astervoipTriggersTotal.inc({ status: 'server_error' });
+      astervoipTriggersTotal.inc({ status: METRIC_STATUS.SERVER_ERROR });
     }
   }
 
