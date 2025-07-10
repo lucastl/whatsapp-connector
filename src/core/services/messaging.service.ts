@@ -68,7 +68,7 @@ export const createMessagingService = (
       const end = externalApiRequestDurationSeconds.startTimer({ service: SERVICE_NAMES.TWILIO });
       try {
         await twilioClient.messages.create({
-          from: `whatsapp:${config.twilio.whatsappNumber}`,
+          from: config.twilio.whatsappNumber,
           to: `whatsapp:${customerPhone}`,
           body: 'Este es un mensaje de prueba para WhatsApp.',
         });
@@ -87,7 +87,7 @@ export const createMessagingService = (
     logger.info({ payload }, `Sending template via Twilio to ${customerPhone}`);
 
     const end = externalApiRequestDurationSeconds.startTimer({ service: SERVICE_NAMES.TWILIO });
-    
+
     try {
       await twilioClient.messages.create(payload);
     } finally {
