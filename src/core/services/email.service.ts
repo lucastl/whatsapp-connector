@@ -10,7 +10,6 @@ import {
   externalApiRequestDurationSeconds,
 } from '@/infrastructure/monitoring/metrics';
 
-// La función ahora es privada del módulo
 const generateSurveyEmailHtml = (customerPhone: string, surveyData: SurveyResponse): string => {
   const surveyItems = Object.entries(surveyData)
     .map(([key, value]) => {
@@ -29,15 +28,12 @@ const generateSurveyEmailHtml = (customerPhone: string, surveyData: SurveyRespon
   `;
 };
 
-// Definimos el tipo para el cliente de Resend para que sea más explícito
 export type ResendClient = Pick<Resend, 'emails'>;
 
-// Definimos la interfaz del servicio
 export interface IEmailService {
   sendEnrichedEmail(customerPhone: string, surveyData: SurveyResponse): Promise<void>;
 }
 
-// Creamos una "factoría" que construye el servicio con sus dependencias
 export const createEmailService = (resendClient: ResendClient): IEmailService => ({
   async sendEnrichedEmail(customerPhone: string, surveyData: SurveyResponse): Promise<void> {
     logger.info(`Preparing enriched email via Resend for ${customerPhone}`);
