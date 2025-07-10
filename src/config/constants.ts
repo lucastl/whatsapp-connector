@@ -43,3 +43,5 @@ export const AUTH_TOKEN_REASONS = {
 export const MESSAGING_PREFIXES = {
   WHATSAPP: 'whatsapp:',
 };
+
+export const SEND_DIRECT_WHATSAPP_MESSAGE = false;

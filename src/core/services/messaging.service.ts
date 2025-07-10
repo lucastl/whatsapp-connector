@@ -63,13 +63,31 @@ export const createMessagingService = (
     if (!twilioClient || !config.twilio.whatsappNumber) {
       throw new AppError(`${SERVICE_NAMES.TWILIO} client is not configured correctly.`, 500);
     }
+    if (config.twilio.sendDirectWhatsappMessage) {
+      logger.info(`Sending direct WhatsApp message via Twilio to ${customerPhone}`);
+      const end = externalApiRequestDurationSeconds.startTimer({ service: SERVICE_NAMES.TWILIO });
+      try {
+        await twilioClient.messages.create({
+          from: `whatsapp:${config.twilio.whatsappNumber}`,
+          to: `whatsapp:${customerPhone}`,
+          body: 'Este es un mensaje de prueba para WhatsApp.',
+        });
+      } finally {
+        end();
+      }
+      return;
+    }
+
     const payload = {
       contentSid: config.twilio.templateSid,
       from: config.twilio.whatsappNumber,
       to: `whatsapp:${customerPhone}`,
     };
+
     logger.info({ payload }, `Sending template via Twilio to ${customerPhone}`);
+
     const end = externalApiRequestDurationSeconds.startTimer({ service: SERVICE_NAMES.TWILIO });
+    
     try {
       await twilioClient.messages.create(payload);
     } finally {

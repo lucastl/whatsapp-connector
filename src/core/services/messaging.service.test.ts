@@ -1,8 +1,9 @@
+import config from '@/config';
+import { ApiError } from '@/core/errors/ApiError';
+import { IWhatsappHttpClient } from '@/infrastructure/providers/meta/whatsapp.httpClient';
+
 import { IEmailService } from './email.service';
 import { createMessagingService, IMessagingService, TwilioClient } from './messaging.service';
-import { IWhatsappHttpClient } from '@/infrastructure/providers/meta/whatsapp.httpClient';
-import { ApiError } from '@/core/errors/ApiError';
-import config from '@/config';
 
 // --- Mocks ---
 jest.mock('@/config');
@@ -18,6 +19,9 @@ jest.mock('@/infrastructure/monitoring/metrics', () => ({
   messagingInvalidPayloadsTotal: { inc: jest.fn() },
   messagingFlowsProcessingErrors: { inc: jest.fn() },
   messagingStatusUpdatesTotal: { inc: jest.fn() },
+  externalApiRequestDurationSeconds: {
+    startTimer: jest.fn(() => jest.fn()), // Simula startTimer que devuelve una función para end()
+  },
 }));
 
 import { apiErrorsTotal, messagingTemplatesSentTotal } from '@/infrastructure/monitoring/metrics';
@@ -43,7 +47,11 @@ describe('Messaging Service', () => {
       },
     } as unknown as jest.Mocked<TwilioClient>;
 
-    messagingService = createMessagingService(mockEmailService, mockWhatsappClient, mockTwilioClient);
+    messagingService = createMessagingService(
+      mockEmailService,
+      mockWhatsappClient,
+      mockTwilioClient,
+    );
   });
 
   describe('triggerSurveyTemplate', () => {
@@ -52,7 +60,7 @@ describe('Messaging Service', () => {
       (config as jest.Mocked<typeof config>).twilio = {
         templateSid: 'test_sid',
         whatsappNumber: 'whatsapp:+123',
-      } as any;
+      } as unknown as (typeof config)['twilio'];
 
       await messagingService.triggerSurveyTemplate('549');
 

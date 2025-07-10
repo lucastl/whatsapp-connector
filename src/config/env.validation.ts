@@ -22,6 +22,7 @@ const envSchema = z
     TWILIO_AUTH_TOKEN: z.string().optional(),
     TWILIO_WHATSAPP_NUMBER: z.string().optional(),
     TWILIO_TEMPLATE_SID: z.string().optional(),
+    SEND_DIRECT_WHATSAPP_MESSAGE: z.coerce.boolean().default(false),
   })
   .refine(
     (data) => {

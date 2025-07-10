@@ -8,6 +8,9 @@ jest.mock('@/infrastructure/logging/logger', () => ({
 jest.mock('@/infrastructure/monitoring/metrics', () => ({
   emailNotificationsTotal: { inc: jest.fn() },
   apiErrorsTotal: { inc: jest.fn() },
+  externalApiRequestDurationSeconds: {
+    startTimer: jest.fn(() => jest.fn()), // Simula startTimer que devuelve una función para end()
+  },
 }));
 
 describe('Email Service', () => {
