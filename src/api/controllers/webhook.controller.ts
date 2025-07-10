@@ -1,31 +1,44 @@
 import { Request, Response } from 'express';
 
 import { asyncHandler } from '@/api/utils/asyncHandler';
-import { asterVoipTriggerSchema } from '@/api/validators/webhook.validator';
-import config from '@/config';
-import { AppError } from '@/core/errors/AppError';
 import {
-  handleIncomingWhatsappMessage,
-  triggerSurveyTemplate,
-} from '@/core/services/whatsapp.service';
-import { astervoipTriggersTotal } from '@/infrastructure/monitoring/metrics';
+  asterVoipTriggerSchema,
+  metaWebhookVerificationSchema,
+} from '@/api/validators/webhook.validator';
+import config from '@/config';
+import { METRIC_STATUS, SERVICE_NAMES } from '@/config/constants';
+import { AppError } from '@/core/errors/AppError';
+import { createEmailService } from '@/core/services/email.service';
+import { createMessagingService } from '@/core/services/messaging.service';
+import { resendClient } from '@/infrastructure/email/resend.client';
+import {
+  astervoipTriggersTotal,
+  messagingWebhookReceivedTotal,
+} from '@/infrastructure/monitoring/metrics';
+import { whatsappHttpClient } from '@/infrastructure/providers/meta/whatsapp.httpClient';
+import { twilioClient } from '@/infrastructure/providers/twilio/twilio.client';
+
+// --- Instanciación de Servicios con Inyección de Dependencias ---
+const emailService = createEmailService(resendClient);
+const messagingService = createMessagingService(emailService, whatsappHttpClient, twilioClient);
+// ----------------------------------------------------------------
 
 export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   req.log.info(`AsterVOIP trigger received from: ${req.ip}`);
 
   const validationResult = asterVoipTriggerSchema.safeParse(req.body);
   if (!validationResult.success) {
-    astervoipTriggersTotal.inc({ status: 'validation_error' });
+    astervoipTriggersTotal.inc({ status: METRIC_STATUS.VALIDATION_ERROR });
     throw new AppError('The request body contains invalid data.', 400, {
       error: validationResult.error.format(),
       body: req.body,
     });
   }
 
-  astervoipTriggersTotal.inc({ status: 'success' });
+  astervoipTriggersTotal.inc({ status: METRIC_STATUS.SUCCESS });
 
   const { customerPhone } = validationResult.data;
-  await triggerSurveyTemplate(customerPhone);
+  await messagingService.triggerSurveyTemplate(customerPhone);
 
   req.log.info(`WhatsApp Template trigger initiated for customer: ${customerPhone}`);
 
@@ -34,20 +47,40 @@ export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
 
 export const handleWhatsappWebhook = (req: Request, res: Response): void => {
   req.log.info('WhatsApp webhook event received');
-  handleIncomingWhatsappMessage(req.body);
+
+  messagingWebhookReceivedTotal.inc({ provider: SERVICE_NAMES.META });
+
+  messagingService.handleIncomingMetaMessage(req.body);
   res.sendStatus(200);
 };
 
-export const verifyWhatsappWebhook = (req: Request, res: Response): void => {
-  const mode = req.query['hub.mode'];
-  const token = req.query['hub.verify_token'];
-  const challenge = req.query['hub.challenge'];
+export const verifyMetaWebhook = (req: Request, res: Response): void => {
+  const validationResult = metaWebhookVerificationSchema.safeParse(req.query);
 
-  if (mode && token && mode === 'subscribe' && token === config.whatsapp.verifyToken) {
-    req.log.info('WhatsApp webhook verified successfully!');
-    res.status(200).send(challenge);
+  if (
+    validationResult.success &&
+    validationResult.data['hub.mode'] === 'subscribe' &&
+    validationResult.data['hub.verify_token'] === config.whatsapp.verifyToken
+  ) {
+    req.log.info('Meta webhook verified successfully!');
+    res.status(200).send(validationResult.data['hub.challenge']);
   } else {
-    req.log.error('Failed to verify WhatsApp webhook.');
+    req.log.error('Failed to verify Meta webhook.');
     res.sendStatus(403);
   }
 };
+
+export const handleTwilioStatusWebhook = (req: Request, res: Response): void => {
+  req.log.info('Twilio status callback received');
+  messagingService.handleTwilioStatusUpdate(req.body);
+  res.sendStatus(200);
+};
+
+export const handleTwilioSurveyWebhook = asyncHandler(async (req, res) => {
+  req.log.info('Twilio Survey webhook received');
+  messagingWebhookReceivedTotal.inc({ provider: SERVICE_NAMES.TWILIO });
+
+  await messagingService.handleIncomingTwilioSurvey(req.body);
+
+  res.sendStatus(200);
+});
