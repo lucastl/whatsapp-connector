@@ -42,4 +42,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           # Ejecuta el script de despliegue que estará en el servidor.
-          script: 'cd /root/whatsapp-connector && ./deploy.sh'
+          script: |
+            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+            cd /root/whatsapp-connector
+            ./deploy.sh
