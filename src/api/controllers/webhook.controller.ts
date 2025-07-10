@@ -36,7 +36,7 @@ export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   astervoipTriggersTotal.inc({ status: METRIC_STATUS.SUCCESS });
 
   const { customerPhone } = validationResult.data;
-  await messagingService.triggerSurveyTemplate(customerPhone);
+  await messagingService.triggerSurveyTemplate(`+549${customerPhone}`);
 
   req.log.info(`WhatsApp Template trigger initiated for customer: ${customerPhone}`);
 
