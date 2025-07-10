@@ -18,10 +18,8 @@ import {
 import { whatsappHttpClient } from '@/infrastructure/providers/meta/whatsapp.httpClient';
 import { twilioClient } from '@/infrastructure/providers/twilio/twilio.client';
 
-// --- Instanciación de Servicios con Inyección de Dependencias ---
 const emailService = createEmailService(resendClient);
 const messagingService = createMessagingService(emailService, whatsappHttpClient, twilioClient);
-// ----------------------------------------------------------------
 
 export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   req.log.info(`AsterVOIP trigger received from: ${req.ip}`);
