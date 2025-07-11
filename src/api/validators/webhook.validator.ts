@@ -59,6 +59,6 @@ export const twilioWebhookSchema = z.object({
   surveyResponse: z.object({
     have_fiber: z.string().optional(),
     mobile_plans: z.string().optional(),
-    location: z.string().optional(),
+    location: z.any().optional(),
   }),
 });
