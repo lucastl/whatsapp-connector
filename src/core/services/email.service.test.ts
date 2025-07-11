@@ -28,21 +28,34 @@ describe('Email Service', () => {
   });
 
   it('should send an email successfully', async () => {
-    (mockResendClient.emails.send as jest.Mock).mockResolvedValue({ data: { id: 'test-id' }, error: null });
+    (mockResendClient.emails.send as jest.Mock).mockResolvedValue({
+      data: { id: 'test-id' },
+      error: null,
+    });
 
-    await emailService.sendEnrichedEmail('12345', { product_interest: 'test' });
+    await emailService.sendEnrichedEmail('12345', {
+      have_fiber: 'yes',
+      mobile_plans: 'basic',
+      location: 'test-location',
+    });
 
     expect(mockResendClient.emails.send).toHaveBeenCalledTimes(1);
-    expect(mockResendClient.emails.send).toHaveBeenCalledWith(expect.objectContaining({
-      subject: expect.stringContaining('Nuevo Lead Calificado'),
-    }));
+    expect(mockResendClient.emails.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subject: expect.stringContaining('Nuevo Lead Calificado'),
+      }),
+    );
   });
 
   it('should handle errors from the Resend API', async () => {
     const apiError = new Error('API is down');
     (mockResendClient.emails.send as jest.Mock).mockResolvedValue({ data: null, error: apiError });
 
-    await emailService.sendEnrichedEmail('12345', { product_interest: 'test' });
+    await emailService.sendEnrichedEmail('12345', {
+      have_fiber: 'yes',
+      mobile_plans: 'basic',
+      location: 'test-location',
+    });
 
     expect(mockResendClient.emails.send).toHaveBeenCalledTimes(1);
   });

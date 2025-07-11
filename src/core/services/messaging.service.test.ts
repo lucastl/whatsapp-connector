@@ -1,5 +1,6 @@
 import config from '@/config';
 import { ApiError } from '@/core/errors/ApiError';
+import { MetaWebhookPayload } from '@/core/types/messaging.types';
 import { IWhatsappHttpClient } from '@/infrastructure/providers/meta/whatsapp.httpClient';
 
 import { IEmailService } from './email.service';
@@ -120,7 +121,7 @@ describe('Messaging Service', () => {
         ],
       };
 
-      messagingService.handleIncomingMetaMessage(validPayload as any);
+      messagingService.handleIncomingMetaMessage(validPayload as MetaWebhookPayload);
 
       expect(mockEmailService.sendEnrichedEmail).toHaveBeenCalledWith('5491122334455', {
         product_interest: 'fiber',
@@ -134,16 +135,18 @@ describe('Messaging Service', () => {
       const validPayload = {
         customerPhone: 'whatsapp:+5491122334455',
         surveyResponse: {
-          product_interest: 'mobile',
-          best_time_to_call: 'afternoon',
+          have_fiber: 'yes',
+          mobile_plans: 'basic',
+          location: 'test-location',
         },
       };
 
       await messagingService.handleIncomingTwilioSurvey(validPayload);
 
       expect(mockEmailService.sendEnrichedEmail).toHaveBeenCalledWith('5491122334455', {
-        product_interest: 'mobile',
-        best_time_to_call: 'afternoon',
+        have_fiber: 'yes',
+        mobile_plans: 'basic',
+        location: 'test-location',
       });
     });
   });

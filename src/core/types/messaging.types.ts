@@ -1,6 +1,7 @@
 export interface SurveyResponse {
-  product_interest?: string;
-  best_time_to_call?: string;
+  have_fiber?: string;
+  mobile_plans?: string;
+  location?: string;
 }
 
 export interface MetaWebhookPayload {

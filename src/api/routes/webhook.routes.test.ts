@@ -1,4 +1,3 @@
-
 import express from 'express';
 import pino from 'pino';
 import { pinoHttp } from 'pino-http';
@@ -25,8 +24,12 @@ jest.mock('@/infrastructure/email/resend.client', () => ({
     },
   },
 }));
-jest.mock('@/infrastructure/providers/meta/whatsapp.httpClient', () => ({ whatsappHttpClient: { post: jest.fn() } }));
-jest.mock('@/infrastructure/providers/twilio/twilio.client', () => ({ twilioClient: { messages: { create: jest.fn() } } }));
+jest.mock('@/infrastructure/providers/meta/whatsapp.httpClient', () => ({
+  whatsappHttpClient: { post: jest.fn() },
+}));
+jest.mock('@/infrastructure/providers/twilio/twilio.client', () => ({
+  twilioClient: { messages: { create: jest.fn() } },
+}));
 
 import { globalErrorHandler } from '@/api/middlewares/error.middleware';
 import webhookRouter from '@/api/routes/webhook.routes';
@@ -57,15 +60,15 @@ describe('Webhook Routes - /api/v1/webhooks', () => {
     });
 
     it('should return 400 for an invalid payload', async () => {
-        const invalidPayload = { phone: '123' };
-        const response = await request(app)
-          .post('/api/v1/webhooks/astervoip-trigger')
-          .set('Authorization', validToken)
-          .send(invalidPayload);
-  
-        expect(response.status).toBe(400);
-        expect(response.body.message).toContain('invalid data');
-      });
+      const invalidPayload = { phone: '123' };
+      const response = await request(app)
+        .post('/api/v1/webhooks/astervoip-trigger')
+        .set('Authorization', validToken)
+        .send(invalidPayload);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain('invalid data');
+    });
   });
 
   describe('POST /twilio-status', () => {
@@ -81,8 +84,9 @@ describe('Webhook Routes - /api/v1/webhooks', () => {
       const payload = {
         customerPhone: 'whatsapp:+5491122334455',
         surveyResponse: {
-          product_interest: 'mobile',
-          best_time_to_call: 'afternoon',
+          have_fiber: 'yes',
+          mobile_plans: 'basic',
+          location: 'Buenos Aires',
         },
       };
       const response = await request(app).post('/api/v1/webhooks/twilio').send(payload);
@@ -92,9 +96,10 @@ describe('Webhook Routes - /api/v1/webhooks', () => {
 
   describe('GET /whatsapp', () => {
     it('should respond with the challenge if the token is valid', async () => {
-      const response = await request(app)
-        .get('/api/v1/webhooks/whatsapp?hub.mode=subscribe&hub.challenge=CHALLENGE_ACCEPTED&hub.verify_token=test-token');
-      
+      const response = await request(app).get(
+        '/api/v1/webhooks/whatsapp?hub.mode=subscribe&hub.challenge=CHALLENGE_ACCEPTED&hub.verify_token=test-token',
+      );
+
       expect(response.status).toBe(200);
       expect(response.text).toBe('CHALLENGE_ACCEPTED');
     });
