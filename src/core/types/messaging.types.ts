@@ -1,7 +1,7 @@
 export interface SurveyResponse {
   have_fiber?: string;
   mobile_plans?: string;
-  location?: string;
+  location?: { latitude: number; longitude: number };
 }
 
 export interface MetaWebhookPayload {

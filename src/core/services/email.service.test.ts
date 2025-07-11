@@ -27,35 +27,48 @@ describe('Email Service', () => {
     emailService = createEmailService(mockResendClient);
   });
 
-  it('should send an email successfully', async () => {
+  it('should send an email successfully with correctly formatted survey data', async () => {
     (mockResendClient.emails.send as jest.Mock).mockResolvedValue({
       data: { id: 'test-id' },
       error: null,
     });
 
-    await emailService.sendEnrichedEmail('12345', {
-      have_fiber: 'yes',
-      mobile_plans: 'basic',
-      location: 'test-location',
-    });
+    const surveyData = {
+      have_fiber: 'Si',
+      mobile_plans: 'Plan Premium',
+      location: { latitude: -34.5345, longitude: -58.4534 },
+      another_field: 'some_value',
+    };
+
+    await emailService.sendEnrichedEmail('123456789', surveyData);
 
     expect(mockResendClient.emails.send).toHaveBeenCalledTimes(1);
-    expect(mockResendClient.emails.send).toHaveBeenCalledWith(
-      expect.objectContaining({
-        subject: expect.stringContaining('Nuevo Lead Calificado'),
-      }),
+    const emailPayload = (mockResendClient.emails.send as jest.Mock).mock.calls[0][0];
+
+    expect(emailPayload.subject).toBe('Nuevo contacto desde WhatsApp: 123456789');
+    expect(emailPayload.html).toContain('<h1>🚀 Nuevo contacto desde WhatsApp</h1>');
+    expect(emailPayload.html).toContain('<p><strong>Nº de teléfono:</strong> 123456789</p>');
+    expect(emailPayload.html).toContain('<li><strong>¿Tiene internet Movistar?:</strong> Si</li>');
+    expect(emailPayload.html).toContain(
+      '<li><strong>Interés en planes de celulares:</strong> Plan Premium</li>',
     );
+    expect(emailPayload.html).toContain(
+      '<li><strong>Ubicación:</strong> latitud: -34.5345, longitud: -58.4534</li>',
+    );
+    expect(emailPayload.html).toContain('<li><strong>Another field:</strong> some_value</li>');
   });
 
   it('should handle errors from the Resend API', async () => {
     const apiError = new Error('API is down');
     (mockResendClient.emails.send as jest.Mock).mockResolvedValue({ data: null, error: apiError });
 
-    await emailService.sendEnrichedEmail('12345', {
-      have_fiber: 'yes',
-      mobile_plans: 'basic',
-      location: 'test-location',
-    });
+    const surveyData = {
+      have_fiber: 'No',
+      mobile_plans: 'Ninguno',
+      location: { latitude: 0, longitude: 0 },
+    };
+
+    await emailService.sendEnrichedEmail('987654321', surveyData);
 
     expect(mockResendClient.emails.send).toHaveBeenCalledTimes(1);
   });
