@@ -53,11 +53,12 @@ export const twilioStatusCallbackSchema = z.object({
 });
 
 export const twilioWebhookSchema = z.object({
-  customerPhone: z.string().startsWith(MESSAGING_PREFIXES.WHATSAPP),
+  customerPhone: z.string().startsWith(MESSAGING_PREFIXES.WHATSAPP, {
+    message: "El campo 'customerPhone' debe comenzar con 'whatsapp:'",
+  }),
   surveyResponse: z.object({
-    zone: z.string().optional(),
-    product_interest: z.string().optional(),
-    preferred_contact: z.string().optional(),
-    current_amount: z.string().optional(),
+    have_fiber: z.string().optional(),
+    mobile_plans: z.string().optional(),
+    location: z.string().optional(),
   }),
 });
