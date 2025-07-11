@@ -88,5 +88,63 @@ describe('Messaging Service', () => {
     });
   });
 
-  // ... Aquí irían los tests para las otras funciones del servicio ...
+  describe('handleIncomingMetaMessage', () => {
+    it('should process a valid flow response and send an email', () => {
+      const validPayload = {
+        object: 'whatsapp_business_account',
+        entry: [
+          {
+            changes: [
+              {
+                field: 'messages',
+                value: {
+                  messages: [
+                    {
+                      from: '5491122334455',
+                      type: 'interactive',
+                      interactive: {
+                        type: 'nfm_reply',
+                        nfm_reply: {
+                          response_json: JSON.stringify({
+                            product_interest: 'fiber',
+                            best_time_to_call: 'morning',
+                          }),
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      messagingService.handleIncomingMetaMessage(validPayload as any);
+
+      expect(mockEmailService.sendEnrichedEmail).toHaveBeenCalledWith('5491122334455', {
+        product_interest: 'fiber',
+        best_time_to_call: 'morning',
+      });
+    });
+  });
+
+  describe('handleIncomingTwilioSurvey', () => {
+    it('should process a valid survey response and send an email', async () => {
+      const validPayload = {
+        customerPhone: 'whatsapp:+5491122334455',
+        surveyResponse: {
+          product_interest: 'mobile',
+          best_time_to_call: 'afternoon',
+        },
+      };
+
+      await messagingService.handleIncomingTwilioSurvey(validPayload);
+
+      expect(mockEmailService.sendEnrichedEmail).toHaveBeenCalledWith('5491122334455', {
+        product_interest: 'mobile',
+        best_time_to_call: 'afternoon',
+      });
+    });
+  });
 });

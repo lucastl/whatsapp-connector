@@ -38,7 +38,7 @@ export const handleAsterVoipTrigger = asyncHandler(async (req, res) => {
   const { customerPhone } = validationResult.data;
   await messagingService.triggerSurveyTemplate(`+549${customerPhone}`);
 
-  req.log.info(`WhatsApp Template trigger initiated for customer: ${customerPhone}`);
+  req.log.info(`WhatsApp Template trigger initiated for customer: +549${customerPhone}`);
 
   res.status(202).json({ message: 'Accepted: WhatsApp Template trigger initiated.' });
 });
@@ -71,7 +71,7 @@ export const verifyMetaWebhook = (req: Request, res: Response): void => {
 export const handleTwilioStatusWebhook = (req: Request, res: Response): void => {
   req.log.info('Twilio status callback received');
   messagingService.handleTwilioStatusUpdate(req.body);
-  res.sendStatus(200);
+  res.sendStatus(204);
 };
 
 export const handleTwilioSurveyWebhook = asyncHandler(async (req, res) => {
@@ -80,5 +80,5 @@ export const handleTwilioSurveyWebhook = asyncHandler(async (req, res) => {
 
   await messagingService.handleIncomingTwilioSurvey(req.body);
 
-  res.sendStatus(200);
+  res.sendStatus(204);
 });

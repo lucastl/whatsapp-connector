@@ -57,8 +57,7 @@ export const twilioWebhookSchema = z.object({
     message: "El campo 'customerPhone' debe comenzar con 'whatsapp:'",
   }),
   surveyResponse: z.object({
-    have_fiber: z.string().optional(),
-    mobile_plans: z.string().optional(),
-    location: z.string().optional(),
+    product_interest: z.string().optional(),
+    best_time_to_call: z.string().optional(),
   }),
 });

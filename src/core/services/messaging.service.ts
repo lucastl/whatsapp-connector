@@ -164,7 +164,7 @@ export const createMessagingService = (
       }
 
       const { customerPhone: phoneWithPrefix, surveyResponse } = validationResult.data;
-      const customerPhone = phoneWithPrefix.replace('whatsapp:', '');
+      const customerPhone = phoneWithPrefix.replace('whatsapp:+', '');
 
       try {
         logger.info(
