@@ -17,6 +17,7 @@ services:
       - '443:443'
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/secrets:/etc/nginx/secrets:ro
       - /etc/letsencrypt:/etc/letsencrypt
       - /var/www/construccion:/var/www/construccion:ro
       - /var/www/lucasweb:/var/www/lucasweb:ro
