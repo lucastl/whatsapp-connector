@@ -64,8 +64,12 @@ const generateSurveyEmailHtml = (customerPhone: string, surveyData: SurveyRespon
     .map(([key, value]) => {
       const label = getLabelForKey(key);
       const formattedValue = formatSurveyValue(key, value);
-      return `<li><strong>${label}:</strong> ${formattedValue}</li>`;
+      if (formattedValue && formattedValue !== 'null' && formattedValue !== 'undefined') {
+        return `<li><strong>${label}:</strong> ${formattedValue}</li>`;
+      }
+      return null;
     })
+    .filter(Boolean)
     .join('');
 
   return `

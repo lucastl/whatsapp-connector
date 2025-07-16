@@ -22,6 +22,7 @@ const envSchema = z
     TWILIO_AUTH_TOKEN: z.string().optional(),
     TWILIO_WHATSAPP_NUMBER: z.string().optional(),
     TWILIO_TEMPLATE_SID: z.string().optional(),
+    TWILIO_X_TOKEN: z.string().optional(),
   })
   .refine(
     (data) => {
@@ -46,13 +47,14 @@ const envSchema = z
           !!data.TWILIO_ACCOUNT_SID &&
           !!data.TWILIO_AUTH_TOKEN &&
           !!data.TWILIO_WHATSAPP_NUMBER &&
-          !!data.TWILIO_TEMPLATE_SID
+          !!data.TWILIO_TEMPLATE_SID &&
+          !!data.TWILIO_X_TOKEN
         );
       }
       return true;
     },
     {
-      message: `El proveedor "${SERVICE_NAMES.TWILIO}" requiere TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER, y TWILIO_TEMPLATE_SID`,
+      message: `El proveedor "${SERVICE_NAMES.TWILIO}" requiere TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER, TWILIO_TEMPLATE_SID, y TWILIO_X_TOKEN`,
       path: ['MESSAGING_PROVIDER'],
     },
   );

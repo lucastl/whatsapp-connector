@@ -16,6 +16,7 @@ const config = {
     authToken: env.TWILIO_AUTH_TOKEN,
     whatsappNumber: env.TWILIO_WHATSAPP_NUMBER,
     templateSid: env.TWILIO_TEMPLATE_SID,
+    xToken: env.TWILIO_X_TOKEN,
   },
   resend: {
     apiKey: env.RESEND_API_KEY,

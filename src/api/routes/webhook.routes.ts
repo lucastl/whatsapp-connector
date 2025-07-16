@@ -7,7 +7,7 @@ import {
   handleWhatsappWebhook,
   verifyMetaWebhook,
 } from '@/api/controllers/webhook.controller';
-import { verifyAsterVoipToken } from '@/api/middlewares/auth.middleware';
+import { verifyAsterVoipToken, verifyTwilioToken } from '@/api/middlewares/auth.middleware';
 
 const webhookRouter = Router();
 
@@ -35,9 +35,9 @@ webhookRouter.get('/whatsapp', verifyMetaWebhook);
 /**
  * @route   POST /api/v1/webhooks/twilio
  * @desc    Endpoint that receives the final JSON payload from a Twilio Studio Flow.
- * @access  Public
+ * @access  Private (requires authentication token)
  */
-webhookRouter.post('/twilio', handleTwilioSurveyWebhook);
+webhookRouter.post('/twilio', verifyTwilioToken, handleTwilioSurveyWebhook);
 
 /**
  * @route   POST /api/v1/webhooks/twilio-status

@@ -12,6 +12,9 @@ jest.mock('@/config', () => ({
     appName: 'test-app',
     logLevel: 'silent',
     astervoipAuthToken: 'test-token',
+    twilio: {
+      xToken: 'test-twilio-token',
+    },
     whatsapp: {
       verifyToken: 'test-token',
     },
@@ -82,6 +85,7 @@ describe('Webhook Routes - /api/v1/webhooks', () => {
   describe('POST /twilio', () => {
     it('should return 204 for a valid survey response', async () => {
       const payload = {
+        'x-token': 'test-twilio-token',
         customerPhone: 'whatsapp:+5491122334455',
         surveyResponse: {
           have_fiber: 'yes',

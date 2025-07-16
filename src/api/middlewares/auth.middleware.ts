@@ -26,3 +26,23 @@ export const verifyAsterVoipToken = (req: Request, res: Response, next: NextFunc
 
   next();
 };
+
+export const verifyTwilioToken = (req: Request, res: Response, next: NextFunction): void => {
+  const token = req.body['x-token'];
+
+  if (!token) {
+    logger.warn('Access attempt to Twilio webhook without token');
+    invalidAuthTokensTotal.inc({ reason: AUTH_TOKEN_REASONS.MISSING_OR_MALFORMED });
+    res.status(401).json({ message: 'Unauthorized: Missing token' });
+    return;
+  }
+
+  if (token !== config.twilio.xToken) {
+    logger.warn('Access attempt to Twilio webhook with invalid token');
+    invalidAuthTokensTotal.inc({ reason: AUTH_TOKEN_REASONS.INVALID_TOKEN });
+    res.status(403).json({ message: 'Forbidden: Invalid token' });
+    return;
+  }
+
+  next();
+};

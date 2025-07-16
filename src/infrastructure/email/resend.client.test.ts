@@ -40,7 +40,7 @@ describe('Resend Client - /Users/jvl/repos/fyc/whatsapp-connector/src/infrastruc
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let instanceReturnedByMock: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset modules to ensure a fresh import of resend.client.ts for each test.
     // This is crucial because the client is instantiated on module load.
     jest.resetModules();
@@ -51,8 +51,9 @@ describe('Resend Client - /Users/jvl/repos/fyc/whatsapp-connector/src/infrastruc
 
     // Dynamically import the module under test AFTER resetting modules and clearing mocks.
     // This ensures it's re-evaluated with the fresh mocks.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { resendClient: freshClient } = require('@/infrastructure/email/resend.client');
+    const { resendClient: freshClient } = await import(
+      '@/infrastructure/email/resend.client'
+    );
     resendClient = freshClient;
 
     // The constructor should have been called once during the require() call.
