@@ -163,7 +163,7 @@ export const createMessagingService = (
         return;
       }
 
-      const { customerPhone: phoneWithPrefix, surveyResponse } = validationResult.data;
+      const { customerPhone: phoneWithPrefix, surveyResponse, user_step } = validationResult.data;
       const customerPhone = phoneWithPrefix.replace('whatsapp:+', '');
 
       try {
@@ -172,7 +172,10 @@ export const createMessagingService = (
           'Twilio Studio response received and validated',
         );
 
-        messagingFlowsCompleted.inc({ provider: SERVICE_NAMES.TWILIO });
+        messagingFlowsCompleted.inc({
+          provider: SERVICE_NAMES.TWILIO,
+          step: user_step || 'unknown',
+        });
         await emailService.sendEnrichedEmail(customerPhone, surveyResponse);
       } catch (error) {
         messagingFlowsProcessingErrors.inc({ provider: SERVICE_NAMES.TWILIO });

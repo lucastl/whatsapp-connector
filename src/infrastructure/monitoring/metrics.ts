@@ -78,7 +78,7 @@ export const messagingInvalidPayloadsTotal = new Counter({
 export const messagingFlowsCompleted = new Counter({
   name: 'messaging_flows_completed_total',
   help: 'Total de flujos de mensajería que fueron completados por el usuario',
-  labelNames: ['provider'],
+  labelNames: ['provider', 'step'],
 });
 
 /**

@@ -87,10 +87,14 @@ describe('Webhook Routes - /api/v1/webhooks', () => {
       const payload = {
         'x-token': 'test-twilio-token',
         customerPhone: 'whatsapp:+5491122334455',
+        user_step: 'completed_flow',
         surveyResponse: {
-          have_fiber: 'yes',
+          has_fiber: 'yes',
           mobile_plans: 'basic',
-          location: 'Buenos Aires',
+          location: {
+            latitude: '-34.6037',
+            longitude: '-58.3816',
+          },
         },
       };
       const response = await request(app).post('/api/v1/webhooks/twilio').send(payload);

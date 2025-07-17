@@ -53,12 +53,23 @@ export const twilioStatusCallbackSchema = z.object({
 });
 
 export const twilioWebhookSchema = z.object({
-  customerPhone: z.string().startsWith(MESSAGING_PREFIXES.WHATSAPP, {
-    message: "El campo 'customerPhone' debe comenzar con 'whatsapp:'",
-  }),
+  customerPhone: z.string(),
+  user_step: z.string().optional(),
   surveyResponse: z.object({
-    have_fiber: z.string().optional(),
+    has_fiber: z.string().optional(),
     mobile_plans: z.string().optional(),
-    location: z.any().optional(),
+    location: z
+      .object({
+        latitude: z.string(),
+        longitude: z.string(),
+      })
+      .optional()
+      .transform((location) => {
+        if (!location) return undefined;
+        const lat = parseFloat(location.latitude);
+        const lon = parseFloat(location.longitude);
+        if (isNaN(lat) || isNaN(lon)) return undefined;
+        return { latitude: lat, longitude: lon };
+      }),
   }),
 });

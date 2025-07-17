@@ -25,7 +25,7 @@ jest.mock('@/infrastructure/monitoring/metrics', () => ({
   },
 }));
 
-import { apiErrorsTotal, messagingTemplatesSentTotal } from '@/infrastructure/monitoring/metrics';
+import { apiErrorsTotal, messagingFlowsCompleted, messagingTemplatesSentTotal } from '@/infrastructure/monitoring/metrics';
 
 describe('Messaging Service', () => {
   let mockEmailService: jest.Mocked<IEmailService>;
@@ -134,19 +134,31 @@ describe('Messaging Service', () => {
     it('should process a valid survey response and send an email', async () => {
       const validPayload = {
         customerPhone: 'whatsapp:+5491122334455',
+        user_step: 'completed_flow',
         surveyResponse: {
-          have_fiber: 'yes',
+          has_fiber: 'yes',
           mobile_plans: 'basic',
-          location: 'test-location',
+          location: {
+            latitude: '-34.6037',
+            longitude: '-58.3816',
+          },
         },
       };
 
       await messagingService.handleIncomingTwilioSurvey(validPayload);
 
+      expect(messagingFlowsCompleted.inc).toHaveBeenCalledWith({
+        provider: 'twilio',
+        step: 'completed_flow',
+      });
+
       expect(mockEmailService.sendEnrichedEmail).toHaveBeenCalledWith('5491122334455', {
-        have_fiber: 'yes',
+        has_fiber: 'yes',
         mobile_plans: 'basic',
-        location: 'test-location',
+        location: {
+          latitude: -34.6037,
+          longitude: -58.3816,
+        },
       });
     });
   });
