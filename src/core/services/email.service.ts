@@ -42,8 +42,11 @@ const formatSurveyValue = (key: string, value: unknown): string => {
     'latitude' in value &&
     'longitude' in value
   ) {
-    const location = value as { latitude: number; longitude: number };
-    return `latitud: ${location.latitude}, longitud: ${location.longitude}`;
+    const location = value as { latitude?: number | null; longitude?: number | null };
+    if (location.latitude && location.longitude) {
+      return `latitud: ${location.latitude}, longitud: ${location.longitude}`;
+    }
+    return '';
   }
 
   if (typeof value === 'object' && value !== null) {

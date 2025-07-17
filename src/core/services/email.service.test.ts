@@ -58,6 +58,27 @@ describe('Email Service', () => {
     expect(emailPayload.html).toContain('<li><strong>Another field:</strong> some_value</li>');
   });
 
+  it('should not include location if latitude and longitude are null or empty', async () => {
+    (mockResendClient.emails.send as jest.Mock).mockResolvedValue({
+      data: { id: 'test-id' },
+      error: null,
+    });
+
+    const surveyData = {
+      have_fiber: 'Si',
+      mobile_plans: 'Plan Premium',
+      location: { latitude: null, longitude: null },
+      another_field: 'some_value',
+    };
+
+    await emailService.sendEnrichedEmail('123456789', surveyData);
+
+    expect(mockResendClient.emails.send).toHaveBeenCalledTimes(1);
+    const emailPayload = (mockResendClient.emails.send as jest.Mock).mock.calls[0][0];
+
+    expect(emailPayload.html).not.toContain('<li><strong>Ubicación:');
+  });
+
   it('should handle errors from the Resend API', async () => {
     const apiError = new Error('API is down');
     (mockResendClient.emails.send as jest.Mock).mockResolvedValue({ data: null, error: apiError });
