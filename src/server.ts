@@ -21,7 +21,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(pinoHttp({ logger }));
 
-app.use(ipWhitelistMiddleware);
 app.use(metricsMiddleware);
 
 app.get('/metrics', async (_req, res) => {
