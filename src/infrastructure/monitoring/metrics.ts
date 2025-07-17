@@ -1,8 +1,7 @@
 import { collectDefaultMetrics, Counter, Histogram, register } from 'prom-client';
 
 // Inicia la recolección de métricas por defecto de Node.js (CPU, memoria, etc.)
-collectDefaultMetrics();
-
+collectDefaultMetrics({ register });
 /**
  * Métrica de propósito general para la duración de las peticiones HTTP.
  */

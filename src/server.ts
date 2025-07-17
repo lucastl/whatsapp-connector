@@ -5,7 +5,6 @@ import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 
 import { globalErrorHandler } from '@/api/middlewares/error.middleware';
-import { ipWhitelistMiddleware } from '@/api/middlewares/ipWhitelist.middleware';
 import { metricsMiddleware } from '@/api/middlewares/metrics.middleware';
 import mainRouter from '@/api/routes';
 import config from '@/config';
