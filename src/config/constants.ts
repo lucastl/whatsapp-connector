@@ -7,7 +7,7 @@ export const META_TEMPLATE_NAME = 'initial_conversation';
 
 export const EMAIL_CONFIG = {
   FROM_ADDRESS: 'Sistema de Alertas <ventas@fycmktinteractivo.com>',
-  SALES_TEAM_LIST: ['ventas@fycmktinteractivo.com'],
+  SALES_TEAM_LIST: ['ventas@fycmktinteractivo.com', 'gerencia@fycmktinteractivo.com'],
 };
 
 export const MESSAGING_INTERACTIVE_TYPES = {
